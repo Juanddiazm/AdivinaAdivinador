@@ -10,11 +10,20 @@ Solo el anfitrión necesita la app. Los demás pueden instalarla también o simp
 
 ## 🎮 Cómo se juega
 
-1. El anfitrión toca **Crear partida** y elige categorías, número de preguntas, segundos por pregunta y qué tan exigentes serán con la ortografía.
+1. El anfitrión toca **Crear partida** y elige el **modo de juego**, categorías, número de preguntas, segundos por pregunta y qué tan exigentes serán con la ortografía.
 2. Todos se conectan al **mismo Wi-Fi**, o al **punto de acceso (hotspot)** del anfitrión si no hay Wi-Fi. No se necesita internet.
 3. Los jugadores tocan **Unirme**: la app busca sola las partidas cercanas. Si no aparece, escriben la dirección que ve el anfitrión.
-4. En cada ronda aparece la pista y todos escriben. A mitad del tiempo puede salir una ayuda: `C _ _ _ _ _ _ _`.
-5. Al final de cada ronda se ve qué escribió cada uno y cuántos puntos ganó; al final, el podio 🏆.
+4. En cada ronda aparece la pista y todos responden. A mitad del tiempo puede salir una ayuda: `C _ _ _ _ _ _ _`.
+5. Al final de cada ronda se ve qué respondió cada uno y cuántos puntos ganó; al final, el podio 🏆.
+
+### Modos de juego
+
+| | Modo | Cómo se responde | Ayuda a mitad de tiempo |
+|---|---|---|---|
+| ✍️ | **Escribir** | Cada uno escribe la respuesta; con errores de ortografía gana una parte | Primera letra y cuántas letras tiene |
+| 🔘 | **Opciones** | Se toca una de 4 opciones (la buena y 3 de la misma categoría) | 50/50: quita dos opciones malas |
+
+En modo opciones solo la respuesta correcta suma, con el mismo bono por rapidez y por ser el primero; al revelar se ve cuántos eligieron cada opción.
 
 ### Puntos
 

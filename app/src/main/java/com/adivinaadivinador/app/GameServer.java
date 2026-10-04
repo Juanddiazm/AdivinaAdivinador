@@ -253,7 +253,7 @@ public final class GameServer {
                 res = new JSONObject().put("app", "adivina").put("host", game.hostName()).put("players", game.playerCount());
             } else if (!"POST".equals(method)) res = Game.error("Método no permitido");
             else if ("join".equals(api)) res = game.join(req.optString("name"), req.optString("hostKey"));
-            else if ("answer".equals(api)) res = game.answer(pid, req.optString("text"));
+            else if ("answer".equals(api)) res = game.answer(pid, req.optString("text"), req.optInt("choice", -1));
             else if ("leave".equals(api)) res = game.leave(pid);
             else if ("settings".equals(api)) res = game.updateSettings(pid, req.optJSONObject("settings") == null ? new JSONObject() : req.getJSONObject("settings"));
             else if ("start".equals(api)) res = game.start(pid);

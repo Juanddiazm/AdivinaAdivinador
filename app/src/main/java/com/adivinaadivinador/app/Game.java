@@ -27,6 +27,11 @@ public final class Game {
     private static final long LOBBY_DROP_MS = 90_000;
     private static final int FIRST_BONUS = 100;
     private static final char NBSP = '\u00A0';
+    private static final int OPTIONS = 4;
+
+    /** Modos de juego: escribir la respuesta o elegirla entre varias opciones. */
+    public static final String MODE_WRITE = "write";
+    public static final String MODE_CHOICE = "choice";
 
     enum Phase { LOBBY, QUESTION, REVEAL, FINAL }
 
@@ -81,6 +86,7 @@ public final class Game {
         // Pregunta actual
         boolean answered;
         String answer = "";
+        int choice = -1;
         Matcher.Result result;
         int gained;
         boolean first;
@@ -101,6 +107,10 @@ public final class Game {
         final Item item;
         final String prompt;
         final String hint;
+        /** Solo en modo opciones: las opciones en orden, cuál es la buena y cuáles quita la ayuda 50/50. */
+        List<String> options;
+        int correct = -1;
+        final List<Integer> removed = new ArrayList<Integer>();
 
         Question(Category category, Item item, String prompt, String hint) {
             this.category = category;
@@ -125,6 +135,7 @@ public final class Game {
     private int seconds = 25;
     private int tolerance = Matcher.NORMAL;
     private boolean hints = true;
+    private String mode = MODE_WRITE;
     private String customText = "";
     private Category custom = new Category("custom", "Personalizada", "✍️", "Pistas del anfitrión", "text");
 
@@ -231,6 +242,7 @@ public final class Game {
         if (s.has("seconds")) seconds = clamp(s.getInt("seconds"), 5, 120);
         if (s.has("tolerance")) tolerance = clamp(s.getInt("tolerance"), Matcher.STRICT, Matcher.GENEROUS);
         if (s.has("hints")) hints = s.getBoolean("hints");
+        if (s.has("mode")) mode = MODE_CHOICE.equals(s.getString("mode")) ? MODE_CHOICE : MODE_WRITE;
         if (s.has("custom")) {
             customText = s.getString("custom");
             if (customText.length() > 20000) customText = customText.substring(0, 20000);
@@ -265,7 +277,7 @@ public final class Game {
                 Item it = decks.get(c).poll();
                 if (it == null) continue;
                 any = true;
-                questions.add(makeQuestion(c, it));
+                questions.add(makeQuestion(c, it, MODE_CHOICE.equals(mode)));
                 if (questions.size() >= rounds) break;
             }
             if (!any) break;
@@ -329,6 +341,11 @@ public final class Game {
     // ---------------------------------------------------------------- respuestas
 
     public synchronized JSONObject answer(String pid, String text) throws JSONException {
+        return answer(pid, text, -1);
+    }
+
+    /** @param choice índice de la opción elegida (modo opciones); se ignora en modo escribir. */
+    public synchronized JSONObject answer(String pid, String text, int choice) throws JSONException {
         Player p = players.get(pid);
         if (p == null) return error("unknown");
         p.lastSeen = System.currentTimeMillis();
@@ -337,10 +354,18 @@ public final class Game {
         long now = System.currentTimeMillis();
         if (now > qDeadline + 750) return error("Se acabó el tiempo");
 
-        String clean = text == null ? "" : text.trim();
-        if (clean.length() > 80) clean = clean.substring(0, 80);
         Question q = questions.get(qIndex);
-        Matcher.Result r = Matcher.score(clean, q.item.accepted, q.category.allAnswers, tolerance);
+        String clean;
+        Matcher.Result r;
+        if (q.options != null) {
+            if (choice < 0 || choice >= q.options.size()) return error("Elige una opción");
+            clean = q.options.get(choice);
+            r = choice == q.correct ? new Matcher.Result(1, "¡Correcto!") : new Matcher.Result(0, "Incorrecto");
+        } else {
+            clean = text == null ? "" : text.trim();
+            if (clean.length() > 80) clean = clean.substring(0, 80);
+            r = Matcher.score(clean, q.item.accepted, q.category.allAnswers, tolerance);
+        }
         double timeLeft = Math.max(0, Math.min(1, (qDeadline - now) / (double) (qDeadline - qStart)));
         int pts = (int) Math.round(r.accuracy * (400 + 600 * timeLeft));
         boolean first = false;
@@ -351,6 +376,7 @@ public final class Game {
         }
         p.answered = true;
         p.answer = clean;
+        p.choice = q.options != null ? choice : -1;
         p.result = r;
         p.gained = pts;
         p.first = first;
@@ -405,7 +431,7 @@ public final class Game {
         List<Player> ranking = ranking();
         JSONObject you = new JSONObject()
                 .put("id", me.id).put("name", me.name).put("host", me.host)
-                .put("score", me.score).put("answered", me.answered).put("answer", me.answer)
+                .put("score", me.score).put("answered", me.answered).put("answer", me.answer).put("choice", me.choice)
                 .put("rank", ranking.indexOf(me) + 1);
         o.put("you", you);
 
@@ -426,7 +452,8 @@ public final class Game {
         for (String id : selected) sel.put(id);
         JSONObject settings = new JSONObject()
                 .put("categories", sel).put("rounds", rounds).put("seconds", seconds)
-                .put("tolerance", tolerance).put("hints", hints).put("customCount", custom.items.size());
+                .put("tolerance", tolerance).put("hints", hints).put("mode", mode)
+                .put("customCount", custom.items.size());
         if (me.host) settings.put("custom", customText);
         o.put("settings", settings);
 
@@ -454,7 +481,13 @@ public final class Game {
                     .put("durationMs", qDeadline - qStart)
                     .put("remainingMs", Math.max(0, qDeadline - now))
                     .put("answeredCount", answeredCount).put("playerCount", active);
-            if (hintShown || phase == Phase.REVEAL) r.put("hint", q.hint);
+            if (q.options != null) {
+                r.put("options", new JSONArray(q.options));
+                // La ayuda 50/50 quita opciones malas a mitad de tiempo (solo mientras se responde).
+                if (hintShown && phase == Phase.QUESTION) r.put("removed", new JSONArray(q.removed));
+            } else if (hintShown || phase == Phase.REVEAL) {
+                r.put("hint", q.hint);
+            }
             putImage(r, q, now);
             o.put("round", r);
         }
@@ -478,10 +511,18 @@ public final class Game {
                         .put("accuracy", res == null ? 0 : res.accuracy)
                         .put("points", p.gained).put("first", p.first).put("streak", p.streak));
             }
-            o.put("reveal", new JSONObject()
+            JSONObject rv = new JSONObject()
                     .put("answer", q.item.answer)
                     .put("results", results)
-                    .put("last", qIndex + 1 >= questions.size()));
+                    .put("last", qIndex + 1 >= questions.size());
+            if (q.options != null) {
+                int[] picks = new int[q.options.size()];
+                for (Player p : players.values()) if (p.choice >= 0 && p.choice < picks.length) picks[p.choice]++;
+                JSONArray pk = new JSONArray();
+                for (int n : picks) pk.put(n);
+                rv.put("correct", q.correct).put("picks", pk);
+            }
+            o.put("reveal", rv);
         }
         return o;
     }
@@ -531,6 +572,7 @@ public final class Game {
     private void resetAnswer(Player p) {
         p.answered = false;
         p.answer = "";
+        p.choice = -1;
         p.result = null;
         p.gained = 0;
         p.first = false;
@@ -548,12 +590,52 @@ public final class Game {
         return list;
     }
 
-    private Question makeQuestion(Category c, Item it) {
+    private Question makeQuestion(Category c, Item it, boolean choice) {
         String prompt;
         if ("scramble".equals(c.type)) prompt = scramble(it.answer);
         else if (it.image != null) prompt = flagsOf(it.prompt); // con imagen, solo queda la bandera como ayuda
         else prompt = it.prompt;
-        return new Question(c, it, prompt, hintFor(it.answer));
+        Question q = new Question(c, it, prompt, hintFor(it.answer));
+        if (choice) addOptions(q);
+        return q;
+    }
+
+    /**
+     * Arma las opciones: la respuesta buena y otras de la misma categoría (si no alcanzan, de
+     * cualquier categoría). También elige al azar las opciones malas que quitará la ayuda 50/50.
+     */
+    private void addOptions(Question q) {
+        List<String> opts = new ArrayList<String>();
+        opts.add(q.item.answer);
+        Set<String> seen = new HashSet<String>(q.item.accepted);
+        List<String> pool = new ArrayList<String>();
+        for (Item o : q.category.items) if (o != q.item) pool.add(o.answer);
+        addDistractors(opts, seen, pool);
+        if (opts.size() < OPTIONS) {
+            pool.clear();
+            for (Category c : categories.values()) for (Item o : c.items) pool.add(o.answer);
+            addDistractors(opts, seen, pool);
+        }
+        Collections.shuffle(opts, rnd);
+        q.options = opts;
+        q.correct = opts.indexOf(q.item.answer);
+        List<Integer> wrong = new ArrayList<Integer>();
+        for (int i = 0; i < opts.size(); i++) if (i != q.correct) wrong.add(i);
+        Collections.shuffle(wrong, rnd);
+        int remove = Math.max(0, opts.size() - 2); // siempre quedan la buena y una mala
+        for (int i = 0; i < remove && i < wrong.size(); i++) q.removed.add(wrong.get(i));
+        Collections.sort(q.removed);
+    }
+
+    private void addDistractors(List<String> opts, Set<String> seen, List<String> pool) {
+        Collections.shuffle(pool, rnd);
+        for (String cand : pool) {
+            if (opts.size() >= OPTIONS) return;
+            String n = Matcher.normalize(cand);
+            if (n.isEmpty() || seen.contains(n)) continue;
+            seen.add(n);
+            opts.add(cand);
+        }
     }
 
     /**

@@ -20,6 +20,12 @@
     { v: 2, name: 'Generoso', desc: 'Casi todo lo que se parezca suma algo. Ideal para niños.' }
   ];
 
+  var MODES = [
+    { v: 'write', name: '✍️ Escribir', desc: 'Cada uno escribe la respuesta. Con errores de ortografía se gana una parte.' },
+    { v: 'choice', name: '🔘 Opciones', desc: 'Se elige entre 4 opciones. Más rápido y fácil, ideal para celular o niños.' }
+  ];
+  var SHAPES = ['▲', '◆', '●', '■'];
+
   // ------------------------------------------------------------------ utilidades
 
   function $(sel) { return document.querySelector(sel); }
@@ -78,6 +84,8 @@
   function accClass(acc) { return acc >= 1 ? 'full' : acc > 0 ? 'part' : 'none'; }
   function accColor(acc) { return acc >= 1 ? 'var(--ok)' : acc > 0 ? 'var(--mid)' : 'var(--bad)'; }
   function pct(acc) { return Math.round(acc * 100) + '%'; }
+
+  function modeOf(mode) { return mode === 'choice' ? MODES[1] : MODES[0]; }
 
   function plural(n) { return n + (n === 1 ? ' pregunta' : ' preguntas'); }
 
@@ -279,6 +287,7 @@
         seconds: s.settings.seconds,
         tolerance: s.settings.tolerance,
         hints: s.settings.hints,
+        mode: s.settings.mode || 'write',
         custom: s.settings.custom || ''
       };
       html +=
@@ -286,10 +295,11 @@
         '<div class="chips" style="margin-bottom:10px"><button class="chip" id="allCats">Todas</button><button class="chip" id="noCats">Ninguna</button></div>' +
         '<div class="cat-grid" id="cats"></div></section>' +
         '<section class="card"><h3>Ajustes</h3>' +
+        '<div class="setting"><label>Modo de juego</label><div class="chips" id="optMode"></div><div class="muted" id="modeDesc"></div></div>' +
         '<div class="setting"><label>Preguntas</label><div class="chips" id="optRounds"></div></div>' +
         '<div class="setting"><label>Segundos por pregunta</label><div class="chips" id="optSeconds"></div></div>' +
-        '<div class="setting"><label>¿Qué tan exigentes con la ortografía?</label><div class="chips" id="optTol"></div><div class="muted" id="tolDesc"></div></div>' +
-        '<div class="setting"><label>Pista a mitad de tiempo</label><div class="chips" id="optHints"></div><div class="muted">Muestra la primera letra y cuántas letras tiene.</div></div>' +
+        '<div class="setting" id="tolSetting"><label>¿Qué tan exigentes con la ortografía?</label><div class="chips" id="optTol"></div><div class="muted" id="tolDesc"></div></div>' +
+        '<div class="setting"><label id="hintsLabel">Pista a mitad de tiempo</label><div class="chips" id="optHints"></div><div class="muted" id="hintsDesc"></div></div>' +
         '</section>' +
         '<section class="card"><h3>✍️ Tu propia categoría</h3>' +
         '<p class="muted" style="margin-top:0">Una pregunta por línea: <b>pista = respuesta / otra forma de escribirla</b></p>' +
@@ -325,6 +335,7 @@
     };
     $('#noCats').onclick = function () { cfg.categories = []; paintSettings(); sendSettings(); };
 
+    chipGroup('#optMode', MODES.map(function (m) { return m.v; }), function (v) { return modeOf(v).name; }, 'mode');
     chipGroup('#optRounds', [5, 10, 15, 20, 30], function (v) { return v; }, 'rounds');
     chipGroup('#optSeconds', [10, 15, 20, 25, 30, 45, 60], function (v) { return v + ' s'; }, 'seconds');
     chipGroup('#optTol', TOLERANCE.map(function (t) { return t.v; }), function (v) { return TOLERANCE[v].name; }, 'tolerance');
@@ -373,7 +384,7 @@
     document.querySelectorAll('#cats .cat').forEach(function (b) {
       b.classList.toggle('on', cfg.categories.indexOf(b.getAttribute('data-id')) >= 0);
     });
-    ['#optRounds', '#optSeconds', '#optTol', '#optHints'].forEach(function (sel) {
+    ['#optMode', '#optRounds', '#optSeconds', '#optTol', '#optHints'].forEach(function (sel) {
       var el = $(sel);
       if (!el) return;
       var key = el.getAttribute('data-key');
@@ -383,6 +394,15 @@
     });
     var td = $('#tolDesc');
     if (td) td.textContent = TOLERANCE[cfg.tolerance].desc;
+    var choice = cfg.mode === 'choice';
+    var md = $('#modeDesc');
+    if (md) md.textContent = modeOf(cfg.mode).desc;
+    var ts = $('#tolSetting');
+    if (ts) ts.hidden = choice; // con opciones no hay ortografía que calificar
+    var hl = $('#hintsLabel');
+    if (hl) hl.textContent = choice ? 'Ayuda 50/50 a mitad de tiempo' : 'Pista a mitad de tiempo';
+    var hd = $('#hintsDesc');
+    if (hd) hd.textContent = choice ? 'Quita dos opciones incorrectas.' : 'Muestra la primera letra y cuántas letras tiene.';
   }
 
   function sendSettings() {
@@ -428,8 +448,11 @@
       var cats = s.settings.categories.map(function (id) { return names[id] || id; });
       $('#summary').innerHTML =
         '<div class="chips" style="margin-bottom:10px">' + (cats.length ? cats.map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') : '<span class="muted">Sin categorías aún</span>') + '</div>' +
-        '<div class="muted">' + s.settings.rounds + ' preguntas · ' + s.settings.seconds + ' s cada una · ortografía: ' +
-        TOLERANCE[s.settings.tolerance].name.toLowerCase() + (s.settings.hints ? ' · con pistas' : '') + '</div>';
+        '<div class="muted">Modo <b>' + esc(modeOf(s.settings.mode).name) + '</b> · ' + s.settings.rounds + ' preguntas · ' +
+        s.settings.seconds + ' s cada una' +
+        (s.settings.mode === 'choice'
+          ? (s.settings.hints ? ' · con ayuda 50/50' : '')
+          : ' · ortografía: ' + TOLERANCE[s.settings.tolerance].name.toLowerCase() + (s.settings.hints ? ' · con pistas' : '')) + '</div>';
     }
   }
 
@@ -443,7 +466,14 @@
       (r.image ? clueImage(r, s.you.answered ? ' still' : '') :
         '<div class="prompt t-' + esc(r.type) + (s.you.answered ? ' still' : '') + '">' + esc(r.prompt) + '</div>') +
       '<div class="hint" id="hint"></div></div>';
-    if (!s.you.answered) {
+    if (r.options && !s.you.answered) {
+      html += '<div class="options" id="opts">' + r.options.map(function (o, i) {
+        return '<button class="opt o' + (i % 4) + '" data-i="' + i + '"><span class="sh">' + SHAPES[i % 4] + '</span>' +
+          '<span class="ot">' + esc(o) + '</span></button>';
+      }).join('') + '</div>';
+    } else if (r.options) {
+      html += '<div class="card sent">✅ Elegiste: <b>«' + esc(s.you.answer) + '»</b><div class="muted">Los puntos se ven cuando termine la ronda.</div></div>';
+    } else if (!s.you.answered) {
       html += '<form class="answer" id="ansForm"><input id="ans" maxlength="80" autocomplete="off" autocorrect="off" ' +
         'autocapitalize="sentences" spellcheck="false" enterkeyhint="send" placeholder="Escribe tu respuesta…">' +
         '<button class="btn">Enviar</button></form>';
@@ -472,6 +502,19 @@
         }).catch(function () { form.querySelector('button').disabled = false; toast('No se pudo enviar, intenta otra vez'); });
       };
     }
+    var opts = $('#opts');
+    if (opts) {
+      opts.onclick = function (e) {
+        var b = e.target.closest('.opt');
+        if (!b || b.disabled || opts.classList.contains('busy')) return;
+        opts.classList.add('busy');
+        b.classList.add('picked');
+        api('answer', { choice: +b.getAttribute('data-i') }).then(function (res) {
+          if (res.error) { toast(res.error); opts.classList.remove('busy'); b.classList.remove('picked'); }
+          poll();
+        }).catch(function () { opts.classList.remove('busy'); b.classList.remove('picked'); toast('No se pudo enviar, intenta otra vez'); });
+      };
+    }
     hostButtons();
     tickTimer();
   }
@@ -485,7 +528,17 @@
 
   function updateQuestion(s) {
     var r = s.round;
-    $('#hint').textContent = r.hint ? '💡 ' + r.hint : '';
+    $('#hint').classList.toggle('plain', !!r.options);
+    if (r.options) {
+      var removed = r.removed || [];
+      $('#hint').textContent = removed.length ? '💡 Ayuda 50/50: quitamos ' + removed.length + (removed.length === 1 ? ' opción' : ' opciones') : '';
+      removed.forEach(function (i) {
+        var b = document.querySelector('.opt[data-i="' + i + '"]');
+        if (b) { b.disabled = true; b.classList.add('gone'); }
+      });
+    } else {
+      $('#hint').textContent = r.hint ? '💡 ' + r.hint : '';
+    }
     $('#answeredInfo').textContent = r.answeredCount + ' de ' + r.playerCount + ' ya respondieron';
     $('#plist').innerHTML = s.players.map(function (p) {
       return '<span class="player' + (p.connected ? '' : ' off') + '" title="' + esc(p.name) + '">' + avatar(p, p.answered) + '</span>';
@@ -509,6 +562,12 @@
         form.querySelector('button').disabled = true;
         num.textContent = '⏰';
       }
+      var opts = $('#opts');
+      if (opts && !opts.classList.contains('closed')) {
+        opts.classList.add('closed');
+        opts.querySelectorAll('.opt').forEach(function (b) { b.disabled = true; });
+        num.textContent = '⏰';
+      }
     }
   }
   setInterval(tickTimer, 100);
@@ -520,8 +579,9 @@
     var html = '<div class="screen">' + topBar(s, roundBar(s)) +
       '<div class="card answer-card"><div class="muted">La respuesta era</div><div class="big-answer">' + esc(rv.answer) + '</div>' +
       (r.image ? clueImage(r, ' small') : '<div class="prompt small t-' + esc(r.type) + '">' + esc(r.prompt) + '</div>') + '</div>' +
+      (rv.picks ? '<section class="card"><h3>Opciones</h3><div class="rows" id="optResults"></div></section>' : '') +
       '<div class="card you-card" id="youCard"></div>' +
-      '<section class="card"><h3>Lo que escribió cada uno</h3><div class="rows" id="results"></div></section>' +
+      '<section class="card"><h3>' + (rv.picks ? 'Lo que eligió cada uno' : 'Lo que escribió cada uno') + '</h3><div class="rows" id="results"></div></section>' +
       '<section class="card"><h3>Tabla de posiciones</h3><div class="rows" id="board"></div></section>';
     if (s.you.host) {
       html += '<div class="sticky-bottom"><div><button class="btn big" id="nextBtn">' +
@@ -549,11 +609,23 @@
       yc.className = 'card you-card acc-' + accClass(mine.accuracy);
       yc.innerHTML = '<div class="lbl">' + esc(mine.label) + (mine.accuracy > 0 && mine.accuracy < 1 ? ' (' + pct(mine.accuracy) + ')' : '') + '</div>' +
         '<div class="pts">+' + mine.points + '</div>' +
-        (mine.text ? '<div class="muted">Escribiste «' + esc(mine.text) + '»</div>' : '') +
+        (mine.text ? '<div class="muted">' + (rv.picks ? 'Elegiste' : 'Escribiste') + ' «' + esc(mine.text) + '»</div>' : '') +
         (mine.first ? '<div class="gain">⚡ ¡Fuiste el primero en acertar! +100</div>' : '') +
         (mine.streak >= 3 ? '<div class="gain">🔥 Racha de ' + mine.streak + '</div>' : '');
     } else {
       yc.style.display = 'none';
+    }
+
+    var or = $('#optResults');
+    if (or && rv.picks) {
+      var total = rv.picks.reduce(function (a, b) { return a + b; }, 0) || 1;
+      or.innerHTML = s.round.options.map(function (o, i) {
+        var good = i === rv.correct;
+        return '<div class="row opt-row' + (good ? ' good' : '') + '"><span class="sh-badge o' + (i % 4) + '">' + SHAPES[i % 4] + '</span>' +
+          '<div class="info"><div class="nm">' + esc(o) + (good ? ' ✅' : '') + (i === s.you.choice ? ' <span class="muted">(tú)</span>' : '') + '</div>' +
+          '<div class="meter"><i style="width:' + Math.round(100 * rv.picks[i] / total) + '%;background:' + (good ? 'var(--ok)' : 'var(--muted)') + '"></i></div></div>' +
+          '<div class="pts' + (rv.picks[i] ? '' : ' zero') + '">' + rv.picks[i] + '</div></div>';
+      }).join('');
     }
 
     $('#results').innerHTML = rv.results.map(function (x) {

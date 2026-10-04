@@ -168,6 +168,35 @@
       lastV = s.v;
       update(s);
     }
+    syncClueImage(s);
+  }
+
+  // La imagen de la pista (fotos y logos). Los logos pixelados se aclaran por etapas: se precarga
+  // la siguiente y se cambia solo cuando ya bajó, para que no parpadee.
+  function clueImage(r, extra) {
+    if (!r.image) return '';
+    return '<img class="clue-img' + (extra || '') + (r.pixelated ? ' pix' : '') + '" id="clueImg" alt="" src="' +
+      esc(r.image) + '" data-src="' + esc(r.image) + '">' +
+      (r.prompt ? '<div class="caption">' + esc(r.prompt) + '</div>' : '');
+  }
+
+  function syncClueImage(s) {
+    var img = $('#clueImg');
+    var r = s.round;
+    if (!img || !r || !r.image || img.getAttribute('data-src') === r.image) return;
+    var want = r.image, pixelated = r.pixelated;
+    img.setAttribute('data-src', want);
+    var next = new Image();
+    next.onload = function () {
+      if (img.getAttribute('data-src') !== want) return;
+      img.src = want;
+      img.classList.toggle('pix', !!pixelated);
+    };
+    // Si falla (Wi-Fi débil), se vuelve a intentar en la siguiente consulta del estado.
+    next.onerror = function () {
+      if (img.getAttribute('data-src') === want) img.setAttribute('data-src', '');
+    };
+    next.src = want;
   }
 
   // ------------------------------------------------------------------ pantallas
@@ -411,7 +440,9 @@
     var html = '<div class="screen">' + topBar(s, roundBar(s)) +
       '<div><div class="timer" id="timer"><div class="bar" id="tbar"></div></div><div class="tnum" id="tnum"></div></div>' +
       '<div class="card prompt-card"><div class="ask">' + esc(r.ask) + '</div>' +
-      '<div class="prompt t-' + esc(r.type) + (s.you.answered ? ' still' : '') + '">' + esc(r.prompt) + '</div><div class="hint" id="hint"></div></div>';
+      (r.image ? clueImage(r, s.you.answered ? ' still' : '') :
+        '<div class="prompt t-' + esc(r.type) + (s.you.answered ? ' still' : '') + '">' + esc(r.prompt) + '</div>') +
+      '<div class="hint" id="hint"></div></div>';
     if (!s.you.answered) {
       html += '<form class="answer" id="ansForm"><input id="ans" maxlength="80" autocomplete="off" autocorrect="off" ' +
         'autocapitalize="sentences" spellcheck="false" enterkeyhint="send" placeholder="Escribe tu respuesta…">' +
@@ -488,7 +519,7 @@
     var r = s.round, rv = s.reveal;
     var html = '<div class="screen">' + topBar(s, roundBar(s)) +
       '<div class="card answer-card"><div class="muted">La respuesta era</div><div class="big-answer">' + esc(rv.answer) + '</div>' +
-      '<div class="prompt small t-' + esc(r.type) + '">' + esc(r.prompt) + '</div></div>' +
+      (r.image ? clueImage(r, ' small') : '<div class="prompt small t-' + esc(r.type) + '">' + esc(r.prompt) + '</div>') + '</div>' +
       '<div class="card you-card" id="youCard"></div>' +
       '<section class="card"><h3>Lo que escribió cada uno</h3><div class="rows" id="results"></div></section>' +
       '<section class="card"><h3>Tabla de posiciones</h3><div class="rows" id="board"></div></section>';

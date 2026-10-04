@@ -47,13 +47,15 @@ public final class GameServer {
     private ServerSocket serverSocket;
     private ExecutorService pool;
     private Thread acceptThread, tickThread;
+    /** Las imágenes tienen nombres al azar que no cambian: se pueden guardar en caché sin riesgo. */
+    private static final String IMAGE_CACHE = "public, max-age=86400, immutable";
     private volatile boolean running;
     private int port;
 
     public GameServer(AssetSource assets, String hostKey) throws Exception {
         this.assets = assets;
         this.hostKey = hostKey;
-        this.game = new Game(new String(readAll(assets.open("data/categorias.json")), UTF8), hostKey);
+        this.game = new Game(new String(readAll(assets.open("data/categorias.json")), UTF8), optionalAsset(assets, "data/imagenes.json"), hostKey);
     }
 
     public Game game() {
@@ -268,6 +270,14 @@ public final class GameServer {
             send(out, 405, "text/plain", "405".getBytes(UTF8), keepAlive);
             return;
         }
+        if (path.startsWith("/img/")) {
+            // Solo nombres generados por tools/fetch_images.py: 12 hex + .webp
+            String name = path.substring(5);
+            byte[] img = name.matches("[a-f0-9]{12}\\.webp") ? asset("img/" + name) : null;
+            if (img == null) send(out, 404, "text/plain", "404".getBytes(UTF8), keepAlive);
+            else send(out, 200, "image/webp", img, keepAlive, IMAGE_CACHE);
+            return;
+        }
         String file = "/".equals(path) || "/index.html".equals(path) ? "index.html" : path.substring(1);
         if (!file.matches("[a-zA-Z0-9_.-]+") || file.startsWith(".")) {
             send(out, 404, "text/plain", "404".getBytes(UTF8), keepAlive);
@@ -281,6 +291,14 @@ public final class GameServer {
         send(out, 200, mime(file), data, keepAlive);
     }
 
+    private static String optionalAsset(AssetSource assets, String path) {
+        try {
+            return new String(readAll(assets.open(path)), UTF8);
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
     private byte[] asset(String path) {
         synchronized (cache) {
             if (cache.containsKey(path)) return cache.get(path);
@@ -291,8 +309,11 @@ public final class GameServer {
         } catch (IOException e) {
             data = null;
         }
-        synchronized (cache) {
-            cache.put(path, data);
+        // Las rutas que no existen no se guardan, para que pedir nombres al azar no llene la memoria.
+        if (data != null) {
+            synchronized (cache) {
+                cache.put(path, data);
+            }
         }
         return data;
     }
@@ -304,15 +325,21 @@ public final class GameServer {
         if (file.endsWith(".json")) return "application/json; charset=utf-8";
         if (file.endsWith(".png")) return "image/png";
         if (file.endsWith(".svg")) return "image/svg+xml";
+        if (file.endsWith(".webp")) return "image/webp";
         return "application/octet-stream";
     }
 
     private static void send(OutputStream out, int code, String type, byte[] body, boolean keepAlive) throws IOException {
+        send(out, code, type, body, keepAlive, "no-store");
+    }
+
+    private static void send(OutputStream out, int code, String type, byte[] body, boolean keepAlive,
+                             String cacheControl) throws IOException {
         String status = code == 200 ? "OK" : code == 404 ? "Not Found" : "Error";
         String head = "HTTP/1.1 " + code + " " + status + "\r\n"
                 + "Content-Type: " + type + "\r\n"
                 + "Content-Length: " + body.length + "\r\n"
-                + "Cache-Control: no-store\r\n"
+                + "Cache-Control: " + cacheControl + "\r\n"
                 + "Connection: " + (keepAlive ? "keep-alive" : "close") + "\r\n\r\n";
         out.write(head.getBytes(UTF8));
         out.write(body);

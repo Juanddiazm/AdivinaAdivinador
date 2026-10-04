@@ -228,6 +228,12 @@ textarea { font-size: 15px; resize: vertical; min-height: 110px; }
 .prompt.small.t-flag { font-size: 48px; }
 .prompt.small.t-emoji { font-size: 30px; }
 .prompt.small.t-scramble { font-size: 16px; }
+.clue-img { display: block; margin: 4px auto 0; max-width: 100%; max-height: 42vh; border-radius: 16px; object-fit: contain; box-shadow: 0 6px 20px rgba(0,0,0,.35); animation: pop .35s ease-out; }
+.clue-img.pix { image-rendering: pixelated; }
+.clue-img.still { animation: none; }
+.clue-img.small { max-height: 24vh; margin-top: 10px; animation: none; }
+.caption { font-size: 36px; line-height: 1.2; margin-top: 10px; }
+.clue-img.small + .caption { font-size: 26px; margin-top: 6px; }
 @keyframes pop { from { transform: scale(.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .hint {
   margin-top: 14px; font-family: ui-monospace, "Roboto Mono", monospace; font-size: 20px; font-weight: 800;
@@ -310,3 +316,6 @@ details li { margin-bottom: 6px; }
 .found { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
 .found .btn { text-align: left; }
 .stack { display: flex; flex-direction: column; gap: 12px; }
+
+.credits-link { margin: 12px 0 0; font-size: 14px; }
+.credits-link a { color: var(--accent); }

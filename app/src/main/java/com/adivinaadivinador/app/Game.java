@@ -34,6 +34,9 @@ public final class Game {
         final String prompt;
         final String answer;
         final List<String> accepted = new ArrayList<String>();
+        /** Foto o logo (nombre al azar en assets/img) y, si el logo muestra el nombre, sus etapas pixeladas. */
+        String image;
+        final List<String> pixels = new ArrayList<String>();
 
         Item(String prompt, String answer, List<String> aliases) {
             this.prompt = prompt;
@@ -133,6 +136,11 @@ public final class Game {
     private boolean firstGiven;
 
     public Game(String categoriesJson, String hostKey) throws JSONException {
+        this(categoriesJson, null, hostKey);
+    }
+
+    /** @param imagesJson contenido de data/imagenes.json, o null si no hay imágenes. */
+    public Game(String categoriesJson, String imagesJson, String hostKey) throws JSONException {
         this.hostKey = hostKey;
         JSONArray cats = new JSONObject(categoriesJson).getJSONArray("categories");
         for (int i = 0; i < cats.length(); i++) {
@@ -153,6 +161,25 @@ public final class Game {
             if (c.optBoolean("default", false)) selected.add(cat.id);
         }
         if (selected.isEmpty() && !categories.isEmpty()) selected.add(categories.keySet().iterator().next());
+        if (imagesJson != null) attachImages(new JSONObject(imagesJson));
+    }
+
+    /** imagenes.json: { "marcas": { "Nike": { "img": "a1b2…", "pix": ["…", …] } }, … } */
+    private void attachImages(JSONObject images) throws JSONException {
+        Iterator<String> ids = images.keys();
+        while (ids.hasNext()) {
+            String id = ids.next();
+            Category cat = categories.get(id);
+            if (cat == null) continue;
+            JSONObject byAnswer = images.getJSONObject(id);
+            for (Item it : cat.items) {
+                JSONObject rec = byAnswer.optJSONObject(it.answer);
+                if (rec == null) continue;
+                it.image = rec.getString("img");
+                JSONArray pix = rec.optJSONArray("pix");
+                if (pix != null) for (int i = 0; i < pix.length(); i++) it.pixels.add(pix.getString(i));
+            }
+        }
     }
 
     // ---------------------------------------------------------------- jugadores
@@ -428,6 +455,7 @@ public final class Game {
                     .put("remainingMs", Math.max(0, qDeadline - now))
                     .put("answeredCount", answeredCount).put("playerCount", active);
             if (hintShown || phase == Phase.REVEAL) r.put("hint", q.hint);
+            putImage(r, q, now);
             o.put("round", r);
         }
 
@@ -521,8 +549,51 @@ public final class Game {
     }
 
     private Question makeQuestion(Category c, Item it) {
-        String prompt = "scramble".equals(c.type) ? scramble(it.answer) : it.prompt;
+        String prompt;
+        if ("scramble".equals(c.type)) prompt = scramble(it.answer);
+        else if (it.image != null) prompt = flagsOf(it.prompt); // con imagen, solo queda la bandera como ayuda
+        else prompt = it.prompt;
         return new Question(c, it, prompt, hintFor(it.answer));
+    }
+
+    /**
+     * Imagen de la pregunta. Los logos que muestran el nombre se ven pixelados y se aclaran por
+     * etapas a lo largo del tiempo; solo se envía la etapa actual para que nadie se adelante.
+     */
+    private void putImage(JSONObject r, Question q, long now) throws JSONException {
+        Item it = q.item;
+        if (it.image == null) return;
+        boolean pixelated = phase == Phase.QUESTION && !it.pixels.isEmpty();
+        String name = it.image;
+        if (pixelated) {
+            long total = Math.max(1, qDeadline - qStart);
+            long stage = (now - qStart) * it.pixels.size() / total;
+            name = it.pixels.get((int) Math.max(0, Math.min(it.pixels.size() - 1, stage)));
+        }
+        r.put("image", "img/" + name + ".webp").put("pixelated", pixelated);
+    }
+
+    /** Solo las banderas (pares de "regional indicators") de un texto: "🗼🇫🇷 Torre…" -> "🇫🇷". */
+    static String flagsOf(String text) {
+        StringBuilder sb = new StringBuilder();
+        int i = 0;
+        while (i < text.length()) {
+            int cp = text.codePointAt(i);
+            int next = i + Character.charCount(cp);
+            if (isRegionalIndicator(cp) && next < text.length() && isRegionalIndicator(text.codePointAt(next))) {
+                int cp2 = text.codePointAt(next);
+                if (sb.length() > 0) sb.append(' ');
+                sb.appendCodePoint(cp).appendCodePoint(cp2);
+                i = next + Character.charCount(cp2);
+            } else {
+                i = next;
+            }
+        }
+        return sb.toString();
+    }
+
+    private static boolean isRegionalIndicator(int cp) {
+        return cp >= 0x1F1E6 && cp <= 0x1F1FF;
     }
 
     /** "Costa Rica" -> "C _ _ _ _   R _ _ _" */

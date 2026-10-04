@@ -1,6 +1,6 @@
 # 🔮 Adivina Adivinador
 
-Juego de adivinanzas para jugar en grupo con el celular. Una persona crea la partida (**anfitrión**) y los demás se unen desde la app o desde el navegador. Aparece una pista (una bandera, emojis, un eslogan, letras revueltas…) y todos escriben la respuesta. **Aunque la escribas mal, algo te llevas:** si era *Colombia* y escribiste *Olombia*, ganas parte de los puntos.
+Juego de adivinanzas para jugar en grupo con el celular. Una persona crea la partida (**anfitrión**) y los demás se unen desde la app o desde el navegador. Aparece una pista (una bandera, una foto, un logo, emojis, letras revueltas…) y todos escriben la respuesta. **Aunque la escribas mal, algo te llevas:** si era *Colombia* y escribiste *Olombia*, ganas parte de los puntos.
 
 ## 📲 Instalar
 
@@ -38,16 +38,16 @@ Solo el anfitrión necesita la app. Los demás pueden instalarla también o simp
 |---|---|---|---|
 | 🌎 | Países por bandera | Bandera | 73 |
 | 🏛️ | Capitales | País → capital | 54 |
-| 🏷️ | Marcas | Eslogan o pista | 46 |
-| 🗺️ | Lugares famosos | Pista con emojis | 37 |
+| 🏷️ | Marcas | Logo real (los que muestran el nombre empiezan pixelados y se van aclarando) | 46 |
+| 🗺️ | Lugares famosos | Foto + bandera del país | 37 |
 | 🎬 | Películas en emojis | Emojis | 38 |
 | 📺 | Series y dibujos | Emojis | 28 |
-| 🐾 | Animales | Descripción | 34 |
-| 🍲 | Comidas del mundo | Descripción | 34 |
+| 🐾 | Animales | Foto | 34 |
+| 🍲 | Comidas del mundo | Foto + bandera del país | 34 |
 | 🔀 | Palabras revueltas | Letras mezcladas al azar | 46 |
-| 🌟 | Personajes famosos | Pista | 35 |
+| 🌟 | Personajes famosos | Foto + bandera | 35 |
 | 🗣️ | Completa el refrán | Inicio del refrán | 30 |
-| ⚽ | Deportes | Descripción | 26 |
+| ⚽ | Deportes | Foto | 26 |
 | ✍️ | **Personalizada** | El anfitrión escribe sus propias preguntas: `pista = respuesta / otra forma` | ∞ |
 
 Las preguntas están en [`app/src/main/assets/data/categorias.json`](app/src/main/assets/data/categorias.json); agregar más es solo añadir líneas `["pista", "respuesta", "alias1", "alias2"]`.
@@ -55,7 +55,7 @@ Las preguntas están en [`app/src/main/assets/data/categorias.json`](app/src/mai
 ## 💡 Más ideas de categorías
 
 - **Siluetas de países o departamentos de Colombia** (con imágenes SVG del mapa).
-- **Logos sin texto** y **escudos de equipos de fútbol** (necesitan imágenes).
+- **Escudos de equipos de fútbol** (con imágenes, como las marcas).
 - **Canciones en emojis** o **«continúa la letra»** de canciones famosas.
 - **¿Quién lo dijo?**: frases célebres de personajes, películas o memes.
 - **Adivina el año**: «¿En qué año llegó el hombre a la Luna?» (puntos según qué tan cerca).
@@ -80,6 +80,17 @@ Todo es Java (sin librerías) + una página web:
 | `.../Discovery.java` | Encuentra partidas en la red por UDP (puerto 8766) |
 | `app/src/main/assets/home.html` | Pantalla de inicio de la app |
 | `app/src/main/assets/web/` | Juego (lo ven la app y los navegadores) |
+
+### Imágenes
+
+Las fotos y logos salen de [Wikimedia Commons](https://commons.wikimedia.org) (solo licencias libres) y van dentro del APK, así que el juego sigue funcionando sin internet. Los créditos de cada imagen están en la app (*¿Cómo se juega?* → *Créditos*) y en [`creditos.html`](app/src/main/assets/web/creditos.html).
+
+- [`tools/imagenes-fuentes.json`](tools/imagenes-fuentes.json): qué archivo de Commons usa cada respuesta y si se pixela (`"pixelar": true`, para logos que muestran el nombre).
+- `tools/fetch_images.py resolve`: para respuestas nuevas, busca en Wikidata la foto principal (o el logo/ícono en las marcas).
+- `tools/fetch_images.py build`: descarga, reduce a WebP, genera los niveles pixelados y escribe `data/imagenes.json` y los créditos.
+- `tools/fetch_images.py sheet`: hojas de contacto en `build/revision/` para revisar las imágenes a ojo.
+
+Los archivos tienen nombres al azar para que la dirección de la imagen no delate la respuesta, y el servidor solo entrega el nivel de pixelado que toca en cada momento. Si una respuesta no tiene imagen, se usa la pista de texto de `categorias.json`.
 
 ### Compilar el APK
 

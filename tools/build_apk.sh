@@ -15,8 +15,8 @@ BUILD="$ROOT/build"
 SRC="$ROOT/app/src/main"
 
 PACKAGE="com.adivinaadivinador.app"
-VERSION_CODE=1
-VERSION_NAME="1.0"
+VERSION_CODE="${VERSION_CODE:-2}"
+VERSION_NAME="${VERSION_NAME:-1.1}"
 MIN_SDK=24
 TARGET_SDK=34
 

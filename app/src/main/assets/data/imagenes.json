@@ -1,0 +1,812 @@
+{
+ "lugares": {
+  "Torre Eiffel": {
+   "img": "d8a766a93cec"
+  },
+  "Estatua de la Libertad": {
+   "img": "625e3f40fe91"
+  },
+  "Coliseo": {
+   "img": "23ea0072f8b4"
+  },
+  "Gran Muralla China": {
+   "img": "728035c56808"
+  },
+  "Machu Picchu": {
+   "img": "a4dd4d73bfa7"
+  },
+  "Pirámides de Giza": {
+   "img": "9f10eac7ab1d"
+  },
+  "Taj Mahal": {
+   "img": "f36d5f16769c"
+  },
+  "Cristo Redentor": {
+   "img": "7a806b69af0c"
+  },
+  "Big Ben": {
+   "img": "69456a6e4932"
+  },
+  "Isla de Pascua": {
+   "img": "3f9894ee7d9e"
+  },
+  "Cartagena": {
+   "img": "c6821c805ab5"
+  },
+  "Catedral de Sal": {
+   "img": "9188c1735d32"
+  },
+  "Piedra del Peñol": {
+   "img": "a5e7012123a2"
+  },
+  "Caño Cristales": {
+   "img": "a4829b2c20af"
+  },
+  "Ciudad Perdida": {
+   "img": "c0c4f0af9b17"
+  },
+  "Parque Tayrona": {
+   "img": "561d7e7daaa4"
+  },
+  "Cataratas del Niágara": {
+   "img": "609ea37bb6db"
+  },
+  "Cataratas del Iguazú": {
+   "img": "a448f253eb4f"
+  },
+  "Golden Gate": {
+   "img": "609c2752117d"
+  },
+  "Ópera de Sídney": {
+   "img": "02246817fa3f"
+  },
+  "Torre de Pisa": {
+   "img": "ae2cb3fcb49b"
+  },
+  "Partenón": {
+   "img": "bc312272f022"
+  },
+  "Sagrada Familia": {
+   "img": "4c2d82f3c0a0"
+  },
+  "Museo del Louvre": {
+   "img": "d11fa38d6dab"
+  },
+  "Chichén Itzá": {
+   "img": "b9095cdae81b"
+  },
+  "Petra": {
+   "img": "026d21ec5b5f"
+  },
+  "Burj Khalifa": {
+   "img": "11b6a0d00e8b"
+  },
+  "Monte Fuji": {
+   "img": "34253e243f96"
+  },
+  "Everest": {
+   "img": "c7e5330fab9e"
+  },
+  "Gran Cañón": {
+   "img": "6646dc261a88"
+  },
+  "Paseo de la Fama": {
+   "img": "b46e485ba67b"
+  },
+  "Amazonas": {
+   "img": "0145069b846a"
+  },
+  "Arco del Triunfo": {
+   "img": "dc4a91bdcc74"
+  },
+  "Neuschwanstein": {
+   "img": "a06e35f30015"
+  },
+  "Fontana di Trevi": {
+   "img": "3bd5964afaab"
+  },
+  "Salar de Uyuni": {
+   "img": "c2db41c1c9cf"
+  },
+  "Islas Galápagos": {
+   "img": "a87a335f45fd"
+  }
+ },
+ "animales": {
+  "Murciélago": {
+   "img": "406e8a6cfc93"
+  },
+  "Guepardo": {
+   "img": "7cf62c9318e6"
+  },
+  "Pingüino": {
+   "img": "322be9c26728"
+  },
+  "Elefante": {
+   "img": "b8ef5507f267"
+  },
+  "Camaleón": {
+   "img": "5bf80780a1cb"
+  },
+  "Pulpo": {
+   "img": "795827d4c18d"
+  },
+  "León": {
+   "img": "1dd81038dac4"
+  },
+  "Cóndor": {
+   "img": "e7eec4048507"
+  },
+  "Perezoso": {
+   "img": "7410adae56cb"
+  },
+  "Canguro": {
+   "img": "918145e0c2c2"
+  },
+  "Koala": {
+   "img": "b5374043cece"
+  },
+  "Panda": {
+   "img": "15726388fe65"
+  },
+  "Jirafa": {
+   "img": "ed02ba6160ad"
+  },
+  "Cebra": {
+   "img": "9c763ed5146e"
+  },
+  "Camello": {
+   "img": "6290e67b8ae4"
+  },
+  "Ballena azul": {
+   "img": "7476f5cf10e5"
+  },
+  "Orca": {
+   "img": "8b410d000525"
+  },
+  "Tortuga": {
+   "img": "7b7f56d5dc4c"
+  },
+  "Flamenco": {
+   "img": "4ef649c8539c"
+  },
+  "Loro": {
+   "img": "6ab86de557c0"
+  },
+  "Abeja": {
+   "img": "2b73218978d2"
+  },
+  "Oruga": {
+   "img": "752bf1a36f66"
+  },
+  "Araña": {
+   "img": "0146afc080c7"
+  },
+  "Pez globo": {
+   "img": "3290386f7285"
+  },
+  "Chigüiro": {
+   "img": "79fff525b8e4"
+  },
+  "Jaguar": {
+   "img": "8d3a49a7fc97"
+  },
+  "Gorila": {
+   "img": "e08f7d27f0ca"
+  },
+  "Paloma": {
+   "img": "ccb2d14b563d"
+  },
+  "Colibrí": {
+   "img": "5f8b3e38204a"
+  },
+  "Escorpión": {
+   "img": "ab73aac8336a"
+  },
+  "Cocodrilo": {
+   "img": "fcff471de6e8"
+  },
+  "Caballito de mar": {
+   "img": "a6fd44dc9967"
+  },
+  "Delfín rosado": {
+   "img": "bbf0aee69808"
+  },
+  "Búho": {
+   "img": "cbaf3c182d41"
+  }
+ },
+ "comidas": {
+  "Bandeja paisa": {
+   "img": "14bb1d870eb0"
+  },
+  "Arepa": {
+   "img": "154b17518387"
+  },
+  "Ajiaco": {
+   "img": "c2ac5ffc99d8"
+  },
+  "Empanada": {
+   "img": "b91de4bacbd7"
+  },
+  "Tamal": {
+   "img": "7a18e68d03eb"
+  },
+  "Patacón": {
+   "img": "be448248721c"
+  },
+  "Sancocho": {
+   "img": "b5066f1f3712"
+  },
+  "Aguapanela": {
+   "img": "a4708e43da49"
+  },
+  "Buñuelo": {
+   "img": "e5afbb50ad35"
+  },
+  "Natilla": {
+   "img": "1f860ca7ba20"
+  },
+  "Taco": {
+   "img": "80bb8ddc1c5a"
+  },
+  "Guacamole": {
+   "img": "959035725582"
+  },
+  "Quesadilla": {
+   "img": "3853d7119c6d"
+  },
+  "Pizza": {
+   "img": "2b7427cc1d09"
+  },
+  "Lasaña": {
+   "img": "44c337935ac9"
+  },
+  "Tiramisú": {
+   "img": "4ce41893f845"
+  },
+  "Sushi": {
+   "img": "b467a6d41150"
+  },
+  "Ramen": {
+   "img": "72e1a73ab49d"
+  },
+  "Paella": {
+   "img": "972afbd9127f"
+  },
+  "Tortilla española": {
+   "img": "78729d77fd32"
+  },
+  "Churro": {
+   "img": "4624ffc3d07f"
+  },
+  "Ceviche": {
+   "img": "bb1c74aef17c"
+  },
+  "Asado": {
+   "img": "8ae220fdf01c"
+  },
+  "Alfajor": {
+   "img": "eb80c7e91b80"
+  },
+  "Perro caliente": {
+   "img": "af0d1d8b0082"
+  },
+  "Hamburguesa": {
+   "img": "eee361e5fdfb"
+  },
+  "Croissant": {
+   "img": "374a47ee1969"
+  },
+  "Shawarma": {
+   "img": "f1d038d24981"
+  },
+  "Dumplings": {
+   "img": "bcb95f5e791f"
+  },
+  "Curry": {
+   "img": "8d5659d3d186"
+  },
+  "Feijoada": {
+   "img": "be54b091658b"
+  },
+  "Pabellón criollo": {
+   "img": "7b192253c763"
+  },
+  "Pretzel": {
+   "img": "68aa610469df"
+  },
+  "Dona": {
+   "img": "a5d744ddfdd4"
+  }
+ },
+ "personajes": {
+  "Shakira": {
+   "img": "3e599bdb6128"
+  },
+  "Lionel Messi": {
+   "img": "63d5e2cbbfac"
+  },
+  "Cristiano Ronaldo": {
+   "img": "2d9be40c1965"
+  },
+  "Gabriel García Márquez": {
+   "img": "ccd9de8d0b8a"
+  },
+  "Fernando Botero": {
+   "img": "0cf0da2940fd"
+  },
+  "J Balvin": {
+   "img": "896004e9dd18"
+  },
+  "Karol G": {
+   "img": "e14d40f19432"
+  },
+  "Juanes": {
+   "img": "a7cb29aa2993"
+  },
+  "James Rodríguez": {
+   "img": "965e60face39"
+  },
+  "Egan Bernal": {
+   "img": "f74ef9206651"
+  },
+  "Bad Bunny": {
+   "img": "26c4fa23c6ee"
+  },
+  "Albert Einstein": {
+   "img": "6253b807d74a"
+  },
+  "Pablo Picasso": {
+   "img": "59a216ed1da6"
+  },
+  "Frida Kahlo": {
+   "img": "175ff7cfa807"
+  },
+  "Mozart": {
+   "img": "9f477c1598fa"
+  },
+  "Leonardo da Vinci": {
+   "img": "c235e28ccb5f"
+  },
+  "Neil Armstrong": {
+   "img": "34e74378174d"
+  },
+  "Isaac Newton": {
+   "img": "6d9b36f11eba"
+  },
+  "Marie Curie": {
+   "img": "b1caed353478"
+  },
+  "Michael Jordan": {
+   "img": "8c5574270d5c"
+  },
+  "Rafael Nadal": {
+   "img": "fd1da60eb8f5"
+  },
+  "The Beatles": {
+   "img": "800d37929e0c"
+  },
+  "Michael Jackson": {
+   "img": "ce18d3ab64fd"
+  },
+  "Taylor Swift": {
+   "img": "a60e2fa1c2ba"
+  },
+  "Elon Musk": {
+   "img": "0ec59667e376"
+  },
+  "Bill Gates": {
+   "img": "5c5a9ad30be5"
+  },
+  "Steve Jobs": {
+   "img": "8a16752d07e0"
+  },
+  "Cristóbal Colón": {
+   "img": "5ba05878955a"
+  },
+  "Simón Bolívar": {
+   "img": "6f6810c24695"
+  },
+  "Mahatma Gandhi": {
+   "img": "1c6f13f6c1a1"
+  },
+  "Nelson Mandela": {
+   "img": "52dca6b8dc98"
+  },
+  "William Shakespeare": {
+   "img": "a4f904ffcbb1"
+  },
+  "Miguel de Cervantes": {
+   "img": "c659512749e1"
+  },
+  "Muhammad Ali": {
+   "img": "ffd54a19b274"
+  },
+  "Usain Bolt": {
+   "img": "263444471ad7"
+  }
+ },
+ "deportes": {
+  "Fútbol": {
+   "img": "aa80d1265c1c"
+  },
+  "Baloncesto": {
+   "img": "5388751ffe00"
+  },
+  "Tenis": {
+   "img": "e69482a1a940"
+  },
+  "Béisbol": {
+   "img": "e142e2bc910f"
+  },
+  "Voleibol": {
+   "img": "25a20761444d"
+  },
+  "Ciclismo": {
+   "img": "c3c2cd8e724b"
+  },
+  "Maratón": {
+   "img": "8effa77864c2"
+  },
+  "Boxeo": {
+   "img": "880f7eb4cf36"
+  },
+  "Golf": {
+   "img": "8935c87d7bc0"
+  },
+  "Tejo": {
+   "img": "73ff66b52049"
+  },
+  "Surf": {
+   "img": "bb76e9e4c7a1"
+  },
+  "Skateboarding": {
+   "img": "2c4480b5dd7b"
+  },
+  "Rugby": {
+   "img": "b429a34e398a"
+  },
+  "Natación": {
+   "img": "cb0e237f1960"
+  },
+  "Esgrima": {
+   "img": "a1540057286f"
+  },
+  "Halterofilia": {
+   "img": "6ca724ba8924"
+  },
+  "Hockey": {
+   "img": "2608af1aaf71"
+  },
+  "Tenis de mesa": {
+   "img": "b8310a3d0039"
+  },
+  "Tiro con arco": {
+   "img": "bdca456c1b5f"
+  },
+  "Judo": {
+   "img": "23f0d185752d"
+  },
+  "Bádminton": {
+   "img": "947ebade1a1c"
+  },
+  "Fórmula 1": {
+   "img": "1d822fcc4e6d"
+  },
+  "Patinaje artístico": {
+   "img": "109c9c3fd913"
+  },
+  "Gimnasia": {
+   "img": "3222d63cae76"
+  },
+  "Escalada": {
+   "img": "11b0b14c2f7d"
+  },
+  "Equitación": {
+   "img": "627b3f99f45f"
+  }
+ },
+ "marcas": {
+  "Nike": {
+   "img": "7cc4ed737a99"
+  },
+  "Adidas": {
+   "img": "d3e4962f8bec"
+  },
+  "Apple": {
+   "img": "59a754c87df3"
+  },
+  "Coca-Cola": {
+   "img": "f028e2ddd923",
+   "pix": [
+    "73a324a47df1",
+    "69f44ac743ff",
+    "d080fcc1c66f",
+    "59904c45fa9a"
+   ]
+  },
+  "McDonald's": {
+   "img": "45dd61499c56"
+  },
+  "Google": {
+   "img": "7fd2b2d1bb96"
+  },
+  "Amazon": {
+   "img": "41129466a7bd",
+   "pix": [
+    "60b7c15ba024",
+    "e4786af99129",
+    "99b2b182bd13",
+    "1c5aad1c1f1a"
+   ]
+  },
+  "Tesla": {
+   "img": "999cd7f4c558"
+  },
+  "Netflix": {
+   "img": "04a148b5b70f"
+  },
+  "Spotify": {
+   "img": "13cbeaf3a0c8"
+  },
+  "Microsoft": {
+   "img": "3329163f3895"
+  },
+  "Nintendo": {
+   "img": "f8dddc6177d6",
+   "pix": [
+    "dd6a9ddfda5f",
+    "745f9f7f94cc",
+    "ef1ad5ccf21d",
+    "3ff831f97684"
+   ]
+  },
+  "Sony": {
+   "img": "e12b97df3870",
+   "pix": [
+    "b514f780a1f2",
+    "6bd5a72d0f8c",
+    "fa35a1c0b7f2",
+    "e27b3284129f"
+   ]
+  },
+  "Samsung": {
+   "img": "86c0a37b3a5a",
+   "pix": [
+    "c51de3679e43",
+    "7511d51081e1",
+    "3fedc8b6e445",
+    "6092c5db39ee"
+   ]
+  },
+  "Starbucks": {
+   "img": "747b210531e8",
+   "pix": [
+    "7f052efba09a",
+    "3d7cbc28b8b0",
+    "f894ccc8940d",
+    "d286751609b8"
+   ]
+  },
+  "Lacoste": {
+   "img": "e9781b1d5a92",
+   "pix": [
+    "b70214e1a153",
+    "e91beb84d498",
+    "31d9ad9dd666",
+    "8509fa6b769c"
+   ]
+  },
+  "Puma": {
+   "img": "601b74f22404",
+   "pix": [
+    "1cde2b871adb",
+    "47db0ec55384",
+    "c5bb1bbde35a",
+    "235520287d4c"
+   ]
+  },
+  "KitKat": {
+   "img": "39c15340a378",
+   "pix": [
+    "27282b22acd6",
+    "a1e8624330ef",
+    "cf8d6d950508",
+    "fa6178e84896"
+   ]
+  },
+  "Burger King": {
+   "img": "dd3a4c5487e9",
+   "pix": [
+    "661a57d61494",
+    "21319bfb114a",
+    "e752f9ed89d8",
+    "061fa8761b8c"
+   ]
+  },
+  "KFC": {
+   "img": "5c31f40812b1",
+   "pix": [
+    "a45a62595318",
+    "6fa8e88471f2",
+    "b8d2f0852924",
+    "4d91fb1070d8"
+   ]
+  },
+  "IKEA": {
+   "img": "325f176d91f5",
+   "pix": [
+    "2659593a6d55",
+    "064d79d659c6",
+    "6bfe82fe8137",
+    "39c2d24d482e"
+   ]
+  },
+  "LEGO": {
+   "img": "7b138aaaec0a",
+   "pix": [
+    "6dfa443e6845",
+    "779aa08afb66",
+    "5c1a82f95692",
+    "3c78d4dab5ee"
+   ]
+  },
+  "Disney": {
+   "img": "5ebd0a14ee3b",
+   "pix": [
+    "923b383f8a0a",
+    "57b297ebb80f",
+    "4cf2166138cf",
+    "3571dec417f3"
+   ]
+  },
+  "YouTube": {
+   "img": "7810d6f3338f"
+  },
+  "Instagram": {
+   "img": "400dfd1666f1"
+  },
+  "WhatsApp": {
+   "img": "92494babed8a"
+  },
+  "Twitter": {
+   "img": "2c99b551b789"
+  },
+  "Audi": {
+   "img": "c80d60ecaca6"
+  },
+  "Mercedes-Benz": {
+   "img": "cf7b9aa9283d"
+  },
+  "Ferrari": {
+   "img": "1dbc13b176d8",
+   "pix": [
+    "c11b4fe248ba",
+    "f8be22f0d6d4",
+    "be80d3b08210",
+    "986be190eb35"
+   ]
+  },
+  "Lamborghini": {
+   "img": "c8af6ef214bb",
+   "pix": [
+    "89ba86496ddc",
+    "cbfa9d5e1dd1",
+    "b9518dd1073b",
+    "3e0ff8ab0943"
+   ]
+  },
+  "BMW": {
+   "img": "70443c7adced",
+   "pix": [
+    "8e6f9a8b849f",
+    "b18bf1bee295",
+    "9a31cb0240e4",
+    "ac614b32ea80"
+   ]
+  },
+  "Red Bull": {
+   "img": "ecbe6b775376",
+   "pix": [
+    "6e0970bc9c1b",
+    "6d4aaae24f71",
+    "309547ab0bb2",
+    "3fc57d197b77"
+   ]
+  },
+  "Domino's": {
+   "img": "bbf3a6d0f54f",
+   "pix": [
+    "fba0fe7bc8fc",
+    "e177dce9b7d3",
+    "e2e6f0ae8a48",
+    "e5e3b534d302"
+   ]
+  },
+  "Juan Valdez": {
+   "img": "e5279e6849bc",
+   "pix": [
+    "70fb9ff4587f",
+    "b9d7f58177c6",
+    "bce7eb341404",
+    "1ede93737101"
+   ]
+  },
+  "Águila": {
+   "img": "49affbf22e63",
+   "pix": [
+    "9bee2e12073b",
+    "c572d8b19c21",
+    "b267d2afa82f",
+    "e7313c8284c1"
+   ]
+  },
+  "Rappi": {
+   "img": "90bc8f5d4d46",
+   "pix": [
+    "32a4a2a370c8",
+    "ed5daacf601f",
+    "fc91ff2a68a0",
+    "307a0eb45976"
+   ]
+  },
+  "Uber": {
+   "img": "6167a07f20ad",
+   "pix": [
+    "ec08f24620fd",
+    "3d7e8666ff63",
+    "2918078dce6a",
+    "d5aa13da284d"
+   ]
+  },
+  "Airbnb": {
+   "img": "0dca329e7cc6",
+   "pix": [
+    "ed2d59576c52",
+    "7a7fa7065758",
+    "24a80cdced1e",
+    "78fca6b714f5"
+   ]
+  },
+  "Zara": {
+   "img": "a52c1b04d6d1",
+   "pix": [
+    "a46c789f97aa",
+    "fc569892dc03",
+    "63ef77efcc5d",
+    "f0e5558eca7c"
+   ]
+  },
+  "Sprite": {
+   "img": "41354bdcc901",
+   "pix": [
+    "5898cb3c7632",
+    "061f4822c902",
+    "d9f5b16ceb1c",
+    "b7fb8e3d81fe"
+   ]
+  },
+  "Fanta": {
+   "img": "2d9c60ee94fb",
+   "pix": [
+    "c333a8777a1d",
+    "990178bc0546",
+    "7d7f79c1e69e",
+    "14e8f4626005"
+   ]
+  },
+  "Walmart": {
+   "img": "7f764316b251"
+  },
+  "Beats": {
+   "img": "479768f52f5c"
+  },
+  "Facebook": {
+   "img": "d6dfaf23424e"
+  },
+  "TikTok": {
+   "img": "7c5c33cd9b6a"
+  }
+ }
+}

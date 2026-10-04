@@ -1,0 +1,731 @@
+{
+ "marcas": {
+  "Nike": {
+   "archivo": "Logo NIKE.svg"
+  },
+  "Adidas": {
+   "archivo": "Adidas trefoil logo.svg"
+  },
+  "Apple": {
+   "archivo": "Apple logo black.svg"
+  },
+  "Coca-Cola": {
+   "archivo": "Coca-Cola logo.svg",
+   "pixelar": true
+  },
+  "McDonald's": {
+   "archivo": "McDonald's square 2020.svg"
+  },
+  "Google": {
+   "archivo": "Google \"G\" logo.svg"
+  },
+  "Amazon": {
+   "archivo": "Amazon logo.svg",
+   "pixelar": true
+  },
+  "Tesla": {
+   "archivo": "Tesla T symbol.svg"
+  },
+  "Netflix": {
+   "archivo": "Netflix 2016 N logo.svg"
+  },
+  "Spotify": {
+   "archivo": "Spotify logo without text.svg"
+  },
+  "Microsoft": {
+   "archivo": "Microsoft icon.svg"
+  },
+  "Nintendo": {
+   "archivo": "Nintendo.svg",
+   "pixelar": true
+  },
+  "Sony": {
+   "archivo": "Sony Group logo.svg",
+   "pixelar": true
+  },
+  "Samsung": {
+   "archivo": "Samsung wordmark.svg",
+   "pixelar": true
+  },
+  "Starbucks": {
+   "archivo": "STARBUCKS logo (monochrome).jpg",
+   "pixelar": true
+  },
+  "Lacoste": {
+   "archivo": "Lacoste wordmark 2011.svg",
+   "pixelar": true
+  },
+  "Puma": {
+   "archivo": "Puma-logo-(text).svg",
+   "pixelar": true
+  },
+  "KitKat": {
+   "archivo": "Logo of the KitKat.svg",
+   "pixelar": true
+  },
+  "Burger King": {
+   "archivo": "Burger King 2020.svg",
+   "pixelar": true
+  },
+  "KFC": {
+   "archivo": "KFC logo wordmark.svg",
+   "pixelar": true
+  },
+  "IKEA": {
+   "archivo": "Ikea logo.svg",
+   "pixelar": true
+  },
+  "LEGO": {
+   "archivo": "LEGO logo.svg",
+   "pixelar": true
+  },
+  "Disney": {
+   "archivo": "The Walt Disney Company Logo.svg",
+   "pixelar": true
+  },
+  "YouTube": {
+   "archivo": "YouTube full-color icon (2024).svg"
+  },
+  "Instagram": {
+   "archivo": "Instagram.svg"
+  },
+  "WhatsApp": {
+   "archivo": "WhatsApp.svg"
+  },
+  "Twitter": {
+   "archivo": "Logo of Twitter.svg"
+  },
+  "Audi": {
+   "archivo": "Audi-Logo 2016.svg"
+  },
+  "Mercedes-Benz": {
+   "archivo": "Mercedes-Benz Star 2022.svg"
+  },
+  "Ferrari": {
+   "archivo": "Ferrari wordmark.svg",
+   "pixelar": true
+  },
+  "Lamborghini": {
+   "archivo": "Lamborghini - logo wordmark+payoff (Italy, 1963-).svg",
+   "pixelar": true
+  },
+  "BMW": {
+   "archivo": "BMW logo (gray).svg",
+   "pixelar": true
+  },
+  "Red Bull": {
+   "archivo": "Logo of Red bull.svg",
+   "pixelar": true
+  },
+  "Domino's": {
+   "archivo": "Dominos pizza logo.svg",
+   "pixelar": true
+  },
+  "Juan Valdez": {
+   "archivo": "Logo JVC.jpg",
+   "pixelar": true
+  },
+  "Águila": {
+   "archivo": "Logo 2019 Cerveza Aguila.png",
+   "pixelar": true
+  },
+  "Rappi": {
+   "archivo": "Rappi logo.svg",
+   "pixelar": true
+  },
+  "Uber": {
+   "archivo": "Uber logo 2018.svg",
+   "pixelar": true
+  },
+  "Airbnb": {
+   "archivo": "Airbnb Logo Bélo.svg",
+   "pixelar": true
+  },
+  "Zara": {
+   "archivo": "Zara Logo.svg",
+   "pixelar": true
+  },
+  "Sprite": {
+   "archivo": "Sprite 2022.svg",
+   "pixelar": true
+  },
+  "Fanta": {
+   "archivo": "Fanta 2023.svg",
+   "pixelar": true
+  },
+  "Walmart": {
+   "archivo": "Walmart Spark (2007).svg"
+  },
+  "Beats": {
+   "archivo": "Beats Electronics logo.svg"
+  },
+  "Facebook": {
+   "archivo": "2023 Facebook icon.svg"
+  },
+  "TikTok": {
+   "archivo": "Tiktok icon.svg"
+  }
+ },
+ "animales": {
+  "León": {
+   "wiki": "Panthera leo",
+   "archivo": "Lion in masai mara.jpg"
+  },
+  "Paloma": {
+   "wiki": "Columba livia",
+   "archivo": "Columba livia (Rock Dove, wild), Duncansby Head, Caithness, Scotland 1.jpg"
+  },
+  "Abeja": {
+   "wiki": "Apis mellifera",
+   "archivo": "(MHNT) Apis mellifera (female) - on viburnum tinus flowers.jpg"
+  },
+  "Araña": {
+   "archivo": "Araneus diadematus (aka).jpg"
+  },
+  "Jaguar": {
+   "wiki": "Panthera onca",
+   "archivo": "Onça-pintada-PE Encontro das Águas-Thiagomarcelcampi(001).jpg"
+  },
+  "Tortuga": {
+   "wiki": "Testudines",
+   "archivo": "Hawaii turtle 2.JPG"
+  },
+  "Cóndor": {
+   "archivo": "Andean Condor Old Timey Portrait (18141223325).jpg"
+  },
+  "Perezoso": {
+   "wiki": "Folivora",
+   "archivo": "Bradypus.jpg"
+  },
+  "Panda": {
+   "wiki": "Ailuropoda melanoleuca",
+   "archivo": "Giant Panda 2004-03-2.jpg"
+  },
+  "Murciélago": {
+   "wiki": "Chiroptera",
+   "archivo": "Big-eared-townsend-fledermaus.jpg"
+  },
+  "Guepardo": {
+   "wiki": "Acinonyx jubatus",
+   "archivo": "Cheetah (Acinonyx jubatus) female 2.jpg"
+  },
+  "Pingüino": {
+   "wiki": "Spheniscidae",
+   "archivo": "Sander-pinguins.jpg"
+  },
+  "Camaleón": {
+   "wiki": "Chamaeleonidae",
+   "archivo": "Bradypodion pumilum Cape chameleon female IMG 1767 (cropped).jpg"
+  },
+  "Pulpo": {
+   "wiki": "Octopoda",
+   "archivo": "Octopus2.jpg"
+  },
+  "Canguro": {
+   "wiki": "Macropus",
+   "archivo": "Eastern grey kangaroo dec07 02.jpg"
+  },
+  "Koala": {
+   "wiki": "Phascolarctos cinereus",
+   "archivo": "Koala climbing tree.jpg"
+  },
+  "Cebra": {
+   "wiki": "Equus quagga",
+   "archivo": "Plains Zebra Equus quagga.jpg"
+  },
+  "Camello": {
+   "wiki": "Camelus",
+   "archivo": "07. Camel Profile, near Silverton, NSW, 07.07.2007.jpg"
+  },
+  "Ballena azul": {
+   "archivo": "Blue-whale.jpg"
+  },
+  "Orca": {
+   "wiki": "Orcinus orca",
+   "archivo": "Killerwhales jumping.jpg"
+  },
+  "Flamenco": {
+   "wiki": "Phoenicopteridae",
+   "archivo": "Greater Flamingoes (Phoenicopterus roseus) W2 IMG 0072.jpg"
+  },
+  "Pez globo": {
+   "wiki": "Tetraodontidae",
+   "archivo": "Canthigaster callisterna (Clown toado).jpg"
+  },
+  "Chigüiro": {
+   "wiki": "Hydrochoerus hydrochaeris",
+   "archivo": "Capybaras (Hydrochoerus hydrachaeris) female and young suckling ... (48427191032).jpg"
+  },
+  "Gorila": {
+   "wiki": "Gorilla",
+   "archivo": "Lowland Gorilla (8973697544).jpg"
+  },
+  "Colibrí": {
+   "wiki": "Trochilidae",
+   "archivo": "Archilochus-alexandri-002-edit.jpg"
+  },
+  "Escorpión": {
+   "wiki": "Scorpiones",
+   "archivo": "Asian forest scorpion in Khao Yai National Park.JPG"
+  },
+  "Cocodrilo": {
+   "wiki": "Crocodylidae",
+   "archivo": "Crocodile Crocodylus-porosus amk.jpg"
+  },
+  "Caballito de mar": {
+   "wiki": "Hippocampus",
+   "archivo": "Hippocampus hippocampus (on Ascophyllum nodosum).jpg"
+  },
+  "Delfín rosado": {
+   "wiki": "Inia geoffrensis",
+   "archivo": "Amazonas Flussdelfin Apure Orinoco Duisburg 01.jpg"
+  },
+  "Búho": {
+   "wiki": "Strigidae",
+   "archivo": "Tawny Owl in Fife, Scotland.jpg"
+  },
+  "Loro": {
+   "wiki": "Psittaciformes",
+   "archivo": "Ara ararauna Luc Viatour.jpg"
+  },
+  "Jirafa": {
+   "wiki": "Giraffa camelopardalis",
+   "archivo": "Rothschild's giraffe (Giraffa camelopardalis rothschildi) - Murchison Falls National Park.jpg"
+  },
+  "Elefante": {
+   "wiki": "Elephantidae",
+   "archivo": "Elefante africano de sabana (Loxodonta africana), parque nacional Kruger, Sudáfrica, 2018-07-25, DD 06.jpg"
+  },
+  "Oruga": {
+   "wiki": "Oruga (larva)",
+   "archivo": "Caterpillar.jpg"
+  }
+ },
+ "comidas": {
+  "Aguapanela": {
+   "archivo": "Cup of aguapanela con limón.jpg"
+  },
+  "Tortilla española": {
+   "wiki": "Tortilla de patatas",
+   "archivo": "Tortilla de Patatas (Corte transversal).jpg"
+  },
+  "Croissant": {
+   "wiki": "Cruasán",
+   "archivo": "Croissants au beurre (18953292873).jpg"
+  },
+  "Pretzel": {
+   "wiki": "Bretzel",
+   "archivo": "Brezel l Bäckerei-Raisch.jpg"
+  },
+  "Dona": {
+   "wiki": "Dónut",
+   "archivo": "Doughnut.jpg"
+  },
+  "Patacón": {
+   "wiki": "Patacón (gastronomía)",
+   "archivo": "Patacones.JPG"
+  },
+  "Bandeja paisa": {
+   "archivo": "Bandeja paisa 30062011.jpg"
+  },
+  "Arepa": {
+   "archivo": "Arepitas Food Macro.jpg"
+  },
+  "Ajiaco": {
+   "archivo": "Ajiaco santafereño 09.jpg"
+  },
+  "Empanada": {
+   "archivo": "Empanadas argentinas de jamón y queso con orégano y tomate, pinceladas con huevo batido.jpg"
+  },
+  "Tamal": {
+   "archivo": "Tamale Oaxaqueño.jpg"
+  },
+  "Sancocho": {
+   "archivo": "Sancocho-hueso.JPG"
+  },
+  "Buñuelo": {
+   "archivo": "Fritulis.jpg"
+  },
+  "Natilla": {
+   "archivo": "Bowl of natillas at Madrid.jpg"
+  },
+  "Taco": {
+   "archivo": "Tacos 2.jpg"
+  },
+  "Guacamole": {
+   "archivo": "Guacomole.jpg"
+  },
+  "Quesadilla": {
+   "wiki": "Quesadilla (México)",
+   "archivo": "Quesadilles de Blanes amb salses.jpg"
+  },
+  "Pizza": {
+   "archivo": "Eq it-na pizza-margherita sep2005 sml.jpg"
+  },
+  "Lasaña": {
+   "archivo": "Meaty Lasagna 8of8 (8736299782).jpg"
+  },
+  "Tiramisú": {
+   "archivo": "Classic Italian Tiramisu-3 (29989504485).jpg"
+  },
+  "Sushi": {
+   "archivo": "Various sushi, beautiful October night at midnight.jpg"
+  },
+  "Ramen": {
+   "archivo": "Ramen, sopa de fideus.jpg"
+  },
+  "Paella": {
+   "archivo": "Cooking a paella.jpg"
+  },
+  "Churro": {
+   "archivo": "Churros en vasos en Londres - A Taste of Spain.jpg"
+  },
+  "Ceviche": {
+   "archivo": "Ceviche del Perú.jpg"
+  },
+  "Asado": {
+   "archivo": "Argentinean asado.jpg"
+  },
+  "Alfajor": {
+   "wiki": "Alfajor (Hispanoamérica)",
+   "archivo": "Alfajorartes.JPG"
+  },
+  "Perro caliente": {
+   "archivo": "Hotdog - Evan Swigart.jpg"
+  },
+  "Hamburguesa": {
+   "archivo": "Burger King double cheeseburger.jpg"
+  },
+  "Shawarma": {
+   "archivo": "Al-Naser Restaurant.jpg"
+  },
+  "Dumplings": {
+   "archivo": "Jiaozi GS CN.jpg"
+  },
+  "Curry": {
+   "archivo": "Indiandishes.jpg"
+  },
+  "Feijoada": {
+   "archivo": "Feijoada à brasileira 1.jpg"
+  },
+  "Pabellón criollo": {
+   "archivo": "Pabellón Criollo Venezolano.jpg"
+  }
+ },
+ "deportes": {
+  "Tejo": {
+   "archivo": "Tejo cancha.jpg"
+  },
+  "Skateboarding": {
+   "wiki": "Monopatinaje",
+   "archivo": "Skateboarding kickflip.jpg"
+  },
+  "Patinaje artístico": {
+   "wiki": "Patinaje artístico sobre hielo",
+   "archivo": "Isabelle Delobel & Olivier Schoenfelder EX Lift - 2007 Europeans.jpg"
+  },
+  "Hockey": {
+   "wiki": "Hockey sobre césped",
+   "archivo": "Great Britain v Argentina Match 2 (2491861962).jpg"
+  },
+  "Fórmula 1": {
+   "wiki": "Fórmula 1",
+   "archivo": "2018 Austrian Grand Prix turn 1 (43147259711).jpg"
+  },
+  "Fútbol": {
+   "archivo": "Algérie - Arménie - 20140531 - Yacine Brahimi (Alg) face à Taron Voskanyan (Arm).jpg"
+  },
+  "Baloncesto": {
+   "archivo": "Dream Team at the 1992 Summer Olympics.JPEG"
+  },
+  "Tenis": {
+   "archivo": "Roger Federer 2.jpg"
+  },
+  "Béisbol": {
+   "archivo": "Zack Greinke on July 29, 2009.jpg"
+  },
+  "Voleibol": {
+   "archivo": "Triple block (Serbia vs China, Grand Prix 2017).jpg"
+  },
+  "Ciclismo": {
+   "archivo": "Japan Cup Cycle Road Race 2024 PA200123.jpg"
+  },
+  "Maratón": {
+   "archivo": "Berlin marathon.jpg"
+  },
+  "Boxeo": {
+   "archivo": "Boxing080905 photoshop.jpg"
+  },
+  "Golf": {
+   "archivo": "Golfer swing.jpg"
+  },
+  "Surf": {
+   "archivo": "Surfer at the Cayucos Pier, Cayucos, CA.jpg"
+  },
+  "Rugby": {
+   "archivo": "USO - Saracens - 20151213 - Maro Itoje attacking.jpg"
+  },
+  "Natación": {
+   "archivo": "Avishag Turek in training camp Eilat Israel.jpg"
+  },
+  "Esgrima": {
+   "archivo": "Final Trophee Monal 2012 n08.jpg"
+  },
+  "Halterofilia": {
+   "archivo": "Bundesarchiv Bild 183-W1107-0054, Peter Wenzel.jpg"
+  },
+  "Tenis de mesa": {
+   "archivo": "Mondial Ping - Men's Singles - Round 4 - Kenta Matsudaira-Vladimir Samsonov - 57.jpg"
+  },
+  "Tiro con arco": {
+   "archivo": "Archery competition.jpg"
+  },
+  "Judo": {
+   "archivo": "KOCIS Korea Judo Kim Jaebum London 36 (7696361164).jpg"
+  },
+  "Bádminton": {
+   "archivo": "Badmintonpan.jpg"
+  },
+  "Gimnasia": {
+   "archivo": "Gymnastics brokenchopstick.jpg"
+  },
+  "Escalada": {
+   "archivo": "01ElCaballo copy.jpg"
+  },
+  "Equitación": {
+   "archivo": "Queluz Solo Picador (9181009668) (cropped).jpg"
+  }
+ },
+ "personajes": {
+  "Mozart": {
+   "wiki": "Wolfgang Amadeus Mozart",
+   "archivo": "Wolfgang-amadeus-mozart 1.jpg"
+  },
+  "Shakira": {
+   "archivo": "2023-11-16 Gala de los Latin Grammy, 03 (cropped)01.jpg"
+  },
+  "Lionel Messi": {
+   "archivo": "Leo Messi Argentina v Egypt 7 July 2026-1.jpg"
+  },
+  "Cristiano Ronaldo": {
+   "archivo": "Cristiano Ronaldo Croatia v Portugal 2 July 2026-075 (cropped).jpg"
+  },
+  "Gabriel García Márquez": {
+   "archivo": "Gabriel García Márquez 02.jpg"
+  },
+  "Fernando Botero": {
+   "archivo": "Fernando Botero (2018).jpg"
+  },
+  "J Balvin": {
+   "archivo": "J Balvin, Noisey Meets; Oct 2018.jpg"
+  },
+  "Karol G": {
+   "archivo": "2023-11-16 Gala de los Latin Grammy, 15 (cropped 2).jpg"
+  },
+  "Juanes": {
+   "archivo": "2023-11-16 Gala de los Latin Grammy, 14 (cropped).jpg"
+  },
+  "James Rodríguez": {
+   "archivo": "James al natural - Series, 02.jpg"
+  },
+  "Egan Bernal": {
+   "archivo": "Egan Bernal KOERS 2019 uitsnede.jpg"
+  },
+  "Bad Bunny": {
+   "archivo": "Bad Bunny 2019 by Glenn Francis (cropped).jpg"
+  },
+  "Albert Einstein": {
+   "archivo": "Einstein 1921 by F Schmutzer - restoration.jpg"
+  },
+  "Pablo Picasso": {
+   "archivo": "Pablo picasso 1.jpg"
+  },
+  "Frida Kahlo": {
+   "archivo": "Frida Kahlo, by Guillermo Kahlo (cropped).jpg"
+  },
+  "Leonardo da Vinci": {
+   "archivo": "Leonardo da Vinci - presumed self-portrait - WGA12798.jpg"
+  },
+  "Neil Armstrong": {
+   "archivo": "Neil Armstrong pose.jpg"
+  },
+  "Isaac Newton": {
+   "archivo": "GodfreyKneller-IsaacNewton-1689.jpg"
+  },
+  "Marie Curie": {
+   "archivo": "Marie Curie (1900) (cropped).jpg"
+  },
+  "Michael Jordan": {
+   "archivo": "Michael Jordan.jpg"
+  },
+  "Rafael Nadal": {
+   "archivo": "Rafael Nadal en 2024 (cropped).jpg"
+  },
+  "The Beatles": {
+   "archivo": "The Beatles members at New York City in 1964.jpg"
+  },
+  "Michael Jackson": {
+   "archivo": "Michael Jackson 1983 (3x4 cropped) (contrast).jpg"
+  },
+  "Taylor Swift": {
+   "archivo": "Taylor Swift at the 2023 MTV Video Music Awards (3).png"
+  },
+  "Elon Musk": {
+   "archivo": "Elon Musk (54816836217) (cropped 2) (b).jpg"
+  },
+  "Bill Gates": {
+   "archivo": "Bill Gates at the European Commission - 2025 - P067383-987995 (cropped).jpg"
+  },
+  "Steve Jobs": {
+   "archivo": "Steve Jobs Headshot 2010-CROP2.jpg"
+  },
+  "Cristóbal Colón": {
+   "archivo": "Ridolfo del Ghirlandaio - Ritratto di Cristoforo Colombo (1520).jpg"
+  },
+  "Simón Bolívar": {
+   "archivo": "Simón Bolívar by Acevedo Bernal, 1922.jpg"
+  },
+  "Mahatma Gandhi": {
+   "archivo": "Mahatma-Gandhi, studio, 1931.jpg"
+  },
+  "Nelson Mandela": {
+   "archivo": "Nelson Mandela 1994.jpg"
+  },
+  "William Shakespeare": {
+   "archivo": "Shakespeare.jpg"
+  },
+  "Miguel de Cervantes": {
+   "archivo": "Juan de Jauregui - Retrato de Miguel de Cervantes.jpg"
+  },
+  "Muhammad Ali": {
+   "archivo": "Muhammad Ali NYWTS.jpg"
+  },
+  "Usain Bolt": {
+   "archivo": "Usain Bolt (9391712915).jpg"
+  }
+ },
+ "lugares": {
+  "Coliseo": {
+   "wiki": "Coliseo de Roma",
+   "archivo": "Colosseo 2020.jpg"
+  },
+  "Cartagena": {
+   "archivo": "Torre del Reloj CTG 11 2019 1357.jpg"
+  },
+  "Catedral de Sal": {
+   "wiki": "Catedral de Sal",
+   "archivo": "Catedral de Sal 02.jpg"
+  },
+  "Parque Tayrona": {
+   "wiki": "Parque nacional natural Tayrona",
+   "archivo": "2019 Santa Marta - Ensenadas en el Parque nacional natural Tayrona.jpg"
+  },
+  "Golden Gate": {
+   "wiki": "Puente Golden Gate",
+   "archivo": "GoldenGateBridge-001.jpg"
+  },
+  "Sagrada Familia": {
+   "wiki": "Templo Expiatorio de la Sagrada Familia",
+   "archivo": "SF maig 2026.jpg"
+  },
+  "Everest": {
+   "wiki": "Monte Everest",
+   "archivo": "Mount Everest as seen from Drukair2 PLW edit.jpg"
+  },
+  "Gran Cañón": {
+   "wiki": "Gran Cañón del Colorado",
+   "archivo": "Grand Canyon view from Pima Point 2010.jpg"
+  },
+  "Paseo de la Fama": {
+   "wiki": "Paseo de la Fama de Hollywood",
+   "archivo": "Stan Freberg Walk of fame.jpg"
+  },
+  "Amazonas": {
+   "wiki": "Río Amazonas",
+   "archivo": "Amazon CIAT (2).jpg"
+  },
+  "Arco del Triunfo": {
+   "wiki": "Arco de Triunfo de París",
+   "archivo": "Arc de Triomphe - Août 2026.jpg"
+  },
+  "Neuschwanstein": {
+   "wiki": "Castillo de Neuschwanstein",
+   "archivo": "Neuschwanstein Castle 2024-02.jpg"
+  },
+  "Torre Eiffel": {
+   "archivo": "Tour Eiffel Wikimedia Commons.jpg"
+  },
+  "Estatua de la Libertad": {
+   "archivo": "Statue of Liberty and a sightseeing boat, Liberty Island, New York.jpg"
+  },
+  "Gran Muralla China": {
+   "archivo": "Badaling China Great-Wall-of-China-06.jpg"
+  },
+  "Machu Picchu": {
+   "archivo": "80 - Machu Picchu - Juin 2009 - edit.jpg"
+  },
+  "Pirámides de Giza": {
+   "archivo": "All Gizah Pyramids.jpg"
+  },
+  "Taj Mahal": {
+   "archivo": "Taj Mahal (Edited).jpeg"
+  },
+  "Cristo Redentor": {
+   "archivo": "Christ the Redeemer - Cristo Redentor.jpg"
+  },
+  "Big Ben": {
+   "archivo": "Elizabeth Tower and the north front of the Palace of Westminster, London.jpg"
+  },
+  "Isla de Pascua": {
+   "archivo": "Easter Island 5.jpg"
+  },
+  "Piedra del Peñol": {
+   "archivo": "Elpenolantioquia.JPG"
+  },
+  "Caño Cristales": {
+   "archivo": "Caño Cristales 01.jpg"
+  },
+  "Ciudad Perdida": {
+   "archivo": "Lost City Ruins.jpg"
+  },
+  "Cataratas del Niágara": {
+   "archivo": "Niagara Falls USA Canada from Skylon Tower on 2002-05-28, full size.jpg"
+  },
+  "Cataratas del Iguazú": {
+   "archivo": "Aerial Foz de Iguaçu 26 Nov 2005.jpg"
+  },
+  "Ópera de Sídney": {
+   "archivo": "00 1375 Sydney Opera House (Australia).jpg"
+  },
+  "Torre de Pisa": {
+   "archivo": "Campanile Dôme - Pise (IT52) - 2022-08-31 - 20.jpg"
+  },
+  "Partenón": {
+   "archivo": "The Parthenon in Athens.jpg"
+  },
+  "Museo del Louvre": {
+   "archivo": "Cour Napoléon at night - Louvre.jpg"
+  },
+  "Chichén Itzá": {
+   "archivo": "Chichen Itza 3.jpg"
+  },
+  "Petra": {
+   "archivo": "The Treasury, Petra, Jordan5.jpg"
+  },
+  "Burj Khalifa": {
+   "archivo": "Dubai skyline 2015 (crop).jpg"
+  },
+  "Monte Fuji": {
+   "archivo": "Kodaki fuji frm shojinko refurb.jpg"
+  },
+  "Fontana di Trevi": {
+   "archivo": "Trevi Fountain - Roma.jpg"
+  },
+  "Salar de Uyuni": {
+   "archivo": "Salar Uyuni au01.jpg"
+  },
+  "Islas Galápagos": {
+   "archivo": "Santa Cruz giant tortoise 04.jpg"
+  }
+ }
+}

@@ -3,6 +3,7 @@ package com.adivinaadivinador.app;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.Intent;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
@@ -57,6 +58,19 @@ public class MainActivity extends Activity {
         web.setWebChromeClient(new WebChromeClient());
         web.setWebViewClient(new WebViewClient() {
             @Override
+            public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
+                // Enlaces externos (p. ej. créditos en Wikimedia) en el navegador, no dentro del juego.
+                Uri url = request.getUrl();
+                if (!"https".equals(url.getScheme())) return false;
+                try {
+                    startActivity(new Intent(Intent.ACTION_VIEW, url));
+                } catch (Exception ignored) {
+                    // Sin navegador instalado: no se hace nada.
+                }
+                return true;
+            }
+
+            @Override
             public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                 if (request.isForMainFrame() && !request.getUrl().toString().startsWith("file:")) {
                     view.loadUrl(HOME + "#error=" + Uri.encode("No se pudo conectar con la partida. ¿Están en la misma red Wi-Fi?"));
@@ -81,6 +95,7 @@ public class MainActivity extends Activity {
     public void onBackPressed() {
         String url = web.getUrl();
         if (url != null && url.startsWith("http")) confirmLeave();
+        else if (url != null && url.contains("creditos.html") && web.canGoBack()) web.goBack();
         else super.onBackPressed();
     }
 

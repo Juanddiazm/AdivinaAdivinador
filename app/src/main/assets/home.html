@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Adivina Adivinador</title>
+<link rel="stylesheet" href="web/style.css">
+</head>
+<body>
+<div class="screen center">
+  <div class="logo bounce">🔮</div>
+  <h1>Adivina<br>Adivinador</h1>
+  <p class="muted">Países, marcas, lugares, películas y mucho más.<br>¡Aunque lo escribas mal, algo te llevas!</p>
+
+  <div class="card">
+    <label for="name">Tu nombre</label>
+    <input id="name" maxlength="16" autocomplete="off" placeholder="¿Cómo te llamas?">
+  </div>
+  <div class="err" id="err"></div>
+
+  <button class="btn big" id="resumeBtn" hidden>↩️ Volver a mi partida</button>
+  <button class="btn big" id="hostBtn">👑 Crear partida</button>
+  <button class="btn big secondary" id="joinBtn">🙋 Unirme a una partida</button>
+
+  <section class="card" id="joinPanel" hidden>
+    <h3>Partidas en tu red</h3>
+    <div class="found" id="found"></div>
+    <button class="chip" id="rescan">🔄 Buscar otra vez</button>
+    <h3 style="margin-top:18px">¿No aparece?</h3>
+    <p class="muted" style="margin-top:0">Escribe la dirección que ve el anfitrión en su pantalla:</p>
+    <form class="answer" id="manual">
+      <input id="addr" placeholder="192.168.1.5:8080" autocomplete="off" autocapitalize="off" inputmode="url">
+      <button class="btn">Ir</button>
+    </form>
+  </section>
+
+  <details class="card">
+    <summary>¿Cómo se juega?</summary>
+    <ol>
+      <li>Una persona toca <b>Crear partida</b> y elige categorías, número de preguntas y tiempo.</li>
+      <li>Los demás se conectan al <b>mismo Wi-Fi</b> (o al punto de acceso del anfitrión) y tocan <b>Unirme</b>. También pueden entrar desde el navegador con la dirección que muestra el anfitrión, sin instalar nada.</li>
+      <li>Aparece una pista: una bandera, emojis, un eslogan, letras revueltas… y todos escriben la respuesta.</li>
+      <li><b>Exacto</b> = puntos completos. <b>Con errores</b> («Olombia» por Colombia) = parte de los puntos. Entre más rápido, más puntos, y el primero en acertar gana ⚡ +100.</li>
+      <li>Si escribes otra respuesta válida (por ejemplo «Irak» cuando era «Irán») no suma.</li>
+    </ol>
+  </details>
+</div>
+<div id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var B = window.AndroidBridge;
+  var $ = function (s) { return document.querySelector(s); };
+  var nameEl = $('#name'), err = $('#err');
+
+  var m = location.hash.match(/error=([^&]*)/);
+  if (m) err.textContent = decodeURIComponent(m[1]);
+
+  if (B) {
+    nameEl.value = B.getName() || '';
+    if (B.isHosting()) $('#resumeBtn').hidden = false;
+  }
+
+  function myName() {
+    var n = nameEl.value.trim();
+    if (!n) {
+      err.textContent = 'Primero escribe tu nombre 👆';
+      nameEl.focus();
+      nameEl.classList.add('shake');
+      setTimeout(function () { nameEl.classList.remove('shake'); }, 400);
+      return null;
+    }
+    err.textContent = '';
+    if (B) B.saveName(n);
+    return n;
+  }
+
+  $('#resumeBtn').onclick = function () { if (B) B.resumeHost(); };
+
+  $('#hostBtn').onclick = function () {
+    var n = myName();
+    if (!n) return;
+    if (!B) { err.textContent = 'Crear partidas solo funciona dentro de la app.'; return; }
+    this.disabled = true;
+    var res = JSON.parse(B.host(n));
+    if (res.error) { err.textContent = res.error; this.disabled = false; }
+  };
+
+  function search() {
+    $('#found').innerHTML = '<div class="muted">🔎 Buscando partidas…</div>';
+    if (B) B.discover();
+    else window.onHostsFound([]);
+  }
+
+  window.onHostsFound = function (list) {
+    var f = $('#found');
+    if (!list.length) {
+      f.innerHTML = '<div class="muted">No encontramos partidas. Revisa que estén en el mismo Wi-Fi y que el anfitrión ya haya creado la partida.</div>';
+      return;
+    }
+    f.innerHTML = list.map(function (h, i) {
+      var label = (h.host || 'Partida').replace(/[<>&"]/g, '');
+      return '<button class="btn ghost" data-i="' + i + '">👑 ' + label + ' <span class="muted">· ' + h.players +
+        (h.players === 1 ? ' jugador' : ' jugadores') + '</span></button>';
+    }).join('');
+    f.onclick = function (e) {
+      var b = e.target.closest('[data-i]');
+      if (!b) return;
+      var h = list[+b.getAttribute('data-i')];
+      var n = myName();
+      if (n) B.join(h.ip + ':' + h.port, n);
+    };
+  };
+
+  $('#joinBtn').onclick = function () {
+    if (!myName()) return;
+    $('#joinPanel').hidden = false;
+    $('#joinPanel').scrollIntoView({ behavior: 'smooth' });
+    search();
+  };
+  $('#rescan').onclick = search;
+
+  $('#manual').onsubmit = function (e) {
+    e.preventDefault();
+    var n = myName();
+    var a = $('#addr').value.trim();
+    if (!n || !a) return;
+    if (B) B.join(a, n);
+  };
+})();
+</script>
+</body>
+</html>

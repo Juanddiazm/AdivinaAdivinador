@@ -1,0 +1,42 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.adivinaadivinador.app'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId 'com.adivinaadivinador.app'
+        minSdk 24
+        targetSdk 34
+        versionCode 1
+        versionName '1.0'
+    }
+
+    // La misma llave que usa tools/build_apk.sh, para poder actualizar el APK sin desinstalar.
+    signingConfigs {
+        adivina {
+            storeFile rootProject.file('tools/adivina-debug.p12')
+            storeType 'pkcs12'
+            storePassword 'android'
+            keyAlias 'adivina'
+            keyPassword 'android'
+        }
+    }
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.adivina
+        }
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.adivina
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}

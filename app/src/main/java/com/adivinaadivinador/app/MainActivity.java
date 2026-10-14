@@ -10,6 +10,8 @@ import android.content.res.AssetManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
+import android.os.Build;
+import android.view.View;
 import android.view.WindowManager;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
@@ -30,7 +32,7 @@ import java.util.List;
 public class MainActivity extends Activity {
 
     private static final String HOME = "file:///android_asset/home.html";
-    private static final int BG = 0xFF17102E;
+    private static final int BG = 0xFFEEE9FF;
 
     // Estáticos para sobrevivir si Android recrea la actividad mientras se es anfitrión.
     private static GameServer server;
@@ -47,6 +49,10 @@ public class MainActivity extends Activity {
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         getWindow().setStatusBarColor(BG);
         getWindow().setNavigationBarColor(BG);
+        // Fondo claro: íconos oscuros en las barras del sistema.
+        int ui = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= 26) ui |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
+        getWindow().getDecorView().setSystemUiVisibility(ui);
         prefs = getSharedPreferences("adivina", MODE_PRIVATE);
 
         web = new WebView(this);

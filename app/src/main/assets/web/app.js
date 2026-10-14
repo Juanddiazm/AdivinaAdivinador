@@ -13,18 +13,22 @@
   var failCount = 0;
   var cfg = null;         // ajustes locales del anfitrión
   var settingsTimer = null;
+  var prevRanks = {};     // posiciones antes de esta ronda (para la flecha de "subió")
+  var lastRanks = {};
 
   var TOLERANCE = [
     { v: 0, name: 'Estricto', desc: 'Solo se perdona un error de dedo en palabras largas.' },
-    { v: 1, name: 'Normal', desc: '"Olombia" o "Colonbia" por Colombia se llevan buena parte de los puntos.' },
+    { v: 1, name: 'Normal', desc: '«Olombia» o «Colonbia» por Colombia se llevan buena parte de los puntos.' },
     { v: 2, name: 'Generoso', desc: 'Casi todo lo que se parezca suma algo. Ideal para niños.' }
   ];
-
   var MODES = [
-    { v: 'write', name: '✍️ Escribir', desc: 'Cada uno escribe la respuesta. Con errores de ortografía se gana una parte.' },
-    { v: 'choice', name: '🔘 Opciones', desc: 'Se elige entre 4 opciones. Más rápido y fácil, ideal para celular o niños.' }
+    { v: 'write', name: 'Escribir', icon: 'pencil', desc: 'Cada uno escribe la respuesta. Con errores de ortografía se gana una parte.' },
+    { v: 'choice', name: 'Opciones', icon: 'grid', desc: 'Se elige entre 4 opciones. Más rápido y fácil, ideal para niños.' }
   ];
-  var SHAPES = ['▲', '◆', '●', '■'];
+  var ROUNDS = [5, 10, 15, 20, 30];
+  var SECONDS = [10, 15, 20, 25, 30, 45, 60];
+  var AVATAR_COLORS = ['#5B3DF5', '#138A55', '#D63A4E', '#2463EB', '#8A4B00', '#0E7490', '#A21CAF', '#1A1433'];
+  var STAR = '<svg class="ic s" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/></svg>';
 
   // ------------------------------------------------------------------ utilidades
 
@@ -69,26 +73,25 @@
     toast.t = setTimeout(function () { t.className = ''; }, 2600);
   }
 
-  function hue(name) {
+  function colorFor(name) {
     var h = 0;
-    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 360;
-    return h;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 9973;
+    return AVATAR_COLORS[h % AVATAR_COLORS.length];
   }
 
-  function avatar(p, check) {
+  function avatar(p, extraClass, check) {
     var letter = (Array.from(p.name)[0] || '?').toUpperCase();
-    return '<span class="avatar" style="background:hsl(' + hue(p.name) + ',65%,48%)">' + esc(letter) +
-      (check ? '<span class="chk">✓</span>' : '') + '</span>';
+    return '<span class="avatar' + (extraClass ? ' ' + extraClass : '') + '" style="background:' + colorFor(p.name) + '">' + esc(letter) +
+      (check ? '<span class="chk">' + icon('check') + '</span>' : '') + '</span>';
   }
 
+  function catIcon(id, emoji) { return window.hasIcon(id) ? icon(id) : esc(emoji || ''); }
   function accClass(acc) { return acc >= 1 ? 'full' : acc > 0 ? 'part' : 'none'; }
-  function accColor(acc) { return acc >= 1 ? 'var(--ok)' : acc > 0 ? 'var(--mid)' : 'var(--bad)'; }
+  function accColor(acc) { return acc >= 1 ? 'var(--green)' : acc > 0 ? 'var(--sun)' : 'var(--coral)'; }
   function pct(acc) { return Math.round(acc * 100) + '%'; }
-
   function modeOf(mode) { return mode === 'choice' ? MODES[1] : MODES[0]; }
-
-  function plural(n) { return n + (n === 1 ? ' pregunta' : ' preguntas'); }
-
+  function plural(n, one, many) { return n + ' ' + (n === 1 ? one : many); }
+  function fmt(n) { return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
   function vibrate(ms) { try { if (navigator.vibrate) navigator.vibrate(ms); } catch (e) { } }
 
   // ------------------------------------------------------------------ arranque y sondeo
@@ -149,8 +152,8 @@
     if (on === !o.hidden) return;
     o.hidden = !on;
     if (on) {
-      o.innerHTML = '📡 Se perdió la conexión con el anfitrión. Reintentando…' +
-        (inApp ? ' <button class="chip" id="offHome">Ir al inicio</button>' : '');
+      o.innerHTML = 'Se perdió la conexión con el anfitrión. Reintentando…' +
+        (inApp ? ' <button class="pill-btn" id="offHome">Ir al inicio</button>' : '');
       var b = $('#offHome');
       if (b) b.onclick = function () { window.AndroidBridge.goHome(); };
     }
@@ -183,7 +186,7 @@
   // la siguiente y se cambia solo cuando ya bajó, para que no parpadee.
   function clueImage(r, extra) {
     if (!r.image) return '';
-    return '<img class="clue-img' + (extra || '') + (r.pixelated ? ' pix' : '') + '" id="clueImg" alt="" src="' +
+    return '<img class="clue-img' + (extra || '') + (r.pixelated ? ' pix' : '') + '" id="clueImg" alt="Imagen de la pista" src="' +
       esc(r.image) + '" data-src="' + esc(r.image) + '">' +
       (r.prompt ? '<div class="caption">' + esc(r.prompt) + '</div>' : '');
   }
@@ -211,6 +214,7 @@
 
   function build(s) {
     window.scrollTo(0, 0);
+    document.body.classList.toggle('final', s.phase === 'final');
     if (s.phase === 'lobby') buildLobby(s);
     else if (s.phase === 'question') buildQuestion(s);
     else if (s.phase === 'reveal') buildReveal(s);
@@ -237,29 +241,33 @@
     });
   }
 
-  function topBar(s, extra) {
-    return '<header class="top">' + (extra || '<div class="brand grow">🔮 Adivina Adivinador</div>') +
-      '<div class="pill score" id="myScore">⭐ ' + s.you.score + '</div>' +
-      '<button class="link" id="leaveBtn">Salir</button></header>';
+  function scorePill(s) {
+    return '<span class="pill score" id="myScore">' + STAR + fmt(s.you.score) + '</span>';
+  }
+
+  function plainBar(title) {
+    return '<header class="top">' + logoMark() + '<span class="grow title">' + esc(title) + '</span>' +
+      '<button class="pill-btn" id="leaveBtn">Salir</button></header>';
   }
 
   function roundBar(s) {
     var r = s.round;
-    return '<div class="pill">' + r.index + '/' + r.total + '</div>' +
-      '<div class="pill grow" style="overflow:hidden;text-overflow:ellipsis">' + esc(r.catIcon + ' ' + r.catName) + '</div>';
+    return '<header class="top"><span class="pill">' + r.index + ' / ' + r.total + '</span>' +
+      '<span class="grow">' + catIcon(r.catId, r.catIcon) + esc(r.catName) + '</span>' + scorePill(s) + '</header>';
   }
 
   // ---- Unirse (navegador)
 
   function renderJoin(msg) {
     screenKey = 'join';
+    document.body.classList.remove('final');
     var saved = store('aa_name') || hash.name || '';
     app.innerHTML =
       '<div class="screen center">' +
-      '<div class="logo bounce">🔮</div><h1>Adivina<br>Adivinador</h1>' +
-      '<p class="muted">Escribe tu nombre para entrar a la partida</p>' +
-      '<form id="joinForm" class="stack"><input id="name" maxlength="16" autocomplete="off" placeholder="Tu nombre" value="' + esc(saved) + '">' +
-      '<button class="btn big">Entrar 🎮</button></form>' +
+      '<div class="brand">' + logoMark('pop-in', true) + '<div><h1>Adivina<br>Adivinador</h1><p>Aunque lo escribas mal, algo te llevas.</p></div></div>' +
+      '<form id="joinForm" class="card"><label for="name">Tu nombre</label>' +
+      '<input id="name" maxlength="16" autocomplete="off" placeholder="¿Cómo te llamas?" value="' + esc(saved) + '">' +
+      '<button class="btn">' + icon('login', 'l') + 'Entrar a la partida</button></form>' +
       '<div class="err">' + esc(msg || '') + '</div>' +
       (inApp ? '<button class="link" id="homeBtn">Volver al inicio</button>' : '') +
       '</div>';
@@ -277,9 +285,9 @@
 
   function buildLobby(s) {
     var host = s.you.host;
-    var html = '<div class="screen">' + topBar(s) +
-      '<section class="card" id="joinBox"></section>' +
-      '<section class="card"><h3>Jugadores <span class="muted" id="pcount"></span></h3><div class="plist" id="plist"></div></section>';
+    var html = '<div class="screen">' + plainBar(host ? 'Tu partida' : 'Sala de espera') +
+      '<section class="card ' + (host ? 'dark ticket' : '') + '" id="joinBox"></section>' +
+      '<section class="stack"><h2>Jugadores <span id="pcount" style="color:var(--violet)"></span></h2><div class="plist" id="plist"></div></section>';
     if (host) {
       cfg = {
         categories: s.settings.categories.slice(),
@@ -291,58 +299,63 @@
         custom: s.settings.custom || ''
       };
       html +=
-        '<section class="card"><h3>Categorías</h3>' +
-        '<div class="chips" style="margin-bottom:10px"><button class="chip" id="allCats">Todas</button><button class="chip" id="noCats">Ninguna</button></div>' +
-        '<div class="cat-grid" id="cats"></div></section>' +
-        '<section class="card"><h3>Ajustes</h3>' +
-        '<div class="setting"><label>Modo de juego</label><div class="chips" id="optMode"></div><div class="muted" id="modeDesc"></div></div>' +
-        '<div class="setting"><label>Preguntas</label><div class="chips" id="optRounds"></div></div>' +
-        '<div class="setting"><label>Segundos por pregunta</label><div class="chips" id="optSeconds"></div></div>' +
-        '<div class="setting" id="tolSetting"><label>¿Qué tan exigentes con la ortografía?</label><div class="chips" id="optTol"></div><div class="muted" id="tolDesc"></div></div>' +
-        '<div class="setting"><label id="hintsLabel">Pista a mitad de tiempo</label><div class="chips" id="optHints"></div><div class="muted" id="hintsDesc"></div></div>' +
+        '<section class="card">' +
+        '<div class="setting"><span class="eyebrow">Modo de juego</span><div class="seg" id="optMode"></div><p class="muted" id="modeDesc"></p></div>' +
+        '<div class="setting"><div class="row-head"><span class="eyebrow" id="catTitle">Categorías</span><button class="link" id="allCats" style="padding:4px;min-height:32px">Todas</button></div>' +
+        '<div class="cat-grid" id="cats"></div></div>' +
+        '<div class="steppers"><div class="setting"><span class="eyebrow">Preguntas</span><div class="stepper" id="stRounds"></div></div>' +
+        '<div class="setting"><span class="eyebrow">Segundos</span><div class="stepper" id="stSeconds"></div></div></div>' +
+        '<div class="setting" id="tolSetting"><span class="eyebrow">Exigencia con la ortografía</span><div class="seg" id="optTol"></div><p class="muted" id="tolDesc"></p></div>' +
+        '<button class="switch-row" id="optHints" style="border:0;background:none;padding:0;font:inherit;text-align:left">' +
+        '<span class="txt"><b id="hintsLabel"></b><span class="muted" id="hintsDesc"></span></span><span class="switch" id="hintsSwitch"></span></button>' +
         '</section>' +
-        '<section class="card"><h3>✍️ Tu propia categoría</h3>' +
-        '<p class="muted" style="margin-top:0">Una pregunta por línea: <b>pista = respuesta / otra forma de escribirla</b></p>' +
-        '<textarea id="custom" placeholder="🐭 El ratón más famoso de Disney = Mickey / Mickey Mouse&#10;La mascota de la casa = Firulais"></textarea>' +
-        '<div class="muted" id="customInfo" style="margin-top:6px"></div></section>' +
-        '<div class="sticky-bottom"><div><button class="btn big" id="startBtn">¡Empezar partida! 🚀</button></div></div>';
+        '<details class="card dashed" id="customBox"><summary>' + icon('pencil') + 'Tu propia categoría</summary>' +
+        '<p class="muted" style="margin:0">Una pregunta por línea: <b>pista = respuesta / otra forma de escribirla</b></p>' +
+        '<textarea id="custom" placeholder="El ratón más famoso de Disney = Mickey / Mickey Mouse&#10;La mascota de la casa = Firulais"></textarea>' +
+        '<div class="muted" id="customInfo"></div></details>' +
+        '<div class="sticky-bottom"><div><button class="btn stack" id="startBtn">¡Empezar!<span class="sub" id="startSub"></span></button></div></div>';
     } else {
-      html += '<section class="card"><h3>Así se jugará</h3><div id="summary"></div></section>' +
-        '<div class="waiting">⏳ Esperando a que el anfitrión empiece<span class="dots"></span></div>';
+      html += '<section class="card"><h2>Así se jugará</h2><div id="summary" class="stack"></div></section>' +
+        '<div class="waiting"><span class="spin"></span>Esperando a que el anfitrión empiece</div>';
     }
     app.innerHTML = html + '</div>';
     if (!host) return;
 
     var catsEl = $('#cats');
-    var all = s.categories.concat([{ id: 'custom', name: 'Personalizada', icon: '✍️', count: s.settings.customCount }]);
+    var all = s.categories.concat([{ id: 'custom', name: 'Personalizada', icon: '', count: s.settings.customCount }]);
     catsEl.innerHTML = all.map(function (c) {
-      return '<button class="cat" data-id="' + esc(c.id) + '"><span class="ic">' + esc(c.icon) + '</span>' +
-        '<span class="nm">' + esc(c.name) + '</span><span class="ct" data-count="' + esc(c.id) + '">' + plural(c.count) + '</span></button>';
+      return '<button class="cat" data-id="' + esc(c.id) + '">' + catIcon(c.id, c.icon) +
+        '<span><span class="nm">' + esc(c.name) + '</span><span class="ct" data-count="' + esc(c.id) + '">' + plural(c.count, 'pregunta', 'preguntas') + '</span></span></button>';
     }).join('');
     catsEl.onclick = function (e) {
       var b = e.target.closest('.cat');
       if (!b) return;
       var id = b.getAttribute('data-id');
       var i = cfg.categories.indexOf(id);
-      if (i >= 0) cfg.categories.splice(i, 1); else cfg.categories.push(id);
+      if (i >= 0) cfg.categories.splice(i, 1);
+      else {
+        cfg.categories.push(id);
+        if (id === 'custom' && !cfg.custom.trim()) $('#customBox').open = true;
+      }
       paintSettings();
       sendSettings();
     };
     $('#allCats').onclick = function () {
-      cfg.categories = s.categories.map(function (c) { return c.id; });
-      if (cfg.custom.trim()) cfg.categories.push('custom');
+      var ids = s.categories.map(function (c) { return c.id; });
+      if (cfg.custom.trim()) ids.push('custom');
+      cfg.categories = cfg.categories.length >= ids.length ? [] : ids;
       paintSettings(); sendSettings();
     };
-    $('#noCats').onclick = function () { cfg.categories = []; paintSettings(); sendSettings(); };
 
-    chipGroup('#optMode', MODES.map(function (m) { return m.v; }), function (v) { return modeOf(v).name; }, 'mode');
-    chipGroup('#optRounds', [5, 10, 15, 20, 30], function (v) { return v; }, 'rounds');
-    chipGroup('#optSeconds', [10, 15, 20, 25, 30, 45, 60], function (v) { return v + ' s'; }, 'seconds');
-    chipGroup('#optTol', TOLERANCE.map(function (t) { return t.v; }), function (v) { return TOLERANCE[v].name; }, 'tolerance');
-    chipGroup('#optHints', [true, false], function (v) { return v ? 'Sí' : 'No'; }, 'hints');
+    segGroup('#optMode', MODES.map(function (m) { return m.v; }), function (v) { return icon(modeOf(v).icon, 's') + esc(modeOf(v).name); }, 'mode');
+    segGroup('#optTol', TOLERANCE.map(function (t) { return t.v; }), function (v) { return esc(TOLERANCE[v].name); }, 'tolerance');
+    stepper('#stRounds', ROUNDS, 'rounds', 'preguntas');
+    stepper('#stSeconds', SECONDS, 'seconds', 'segundos');
+    $('#optHints').onclick = function () { cfg.hints = !cfg.hints; paintSettings(); sendSettings(); };
 
     var ta = $('#custom');
     ta.value = cfg.custom;
+    if (cfg.categories.indexOf('custom') >= 0 && !cfg.custom.trim()) $('#customBox').open = true;
     ta.oninput = function () {
       cfg.custom = ta.value;
       if (cfg.custom.trim() && cfg.categories.indexOf('custom') < 0) cfg.categories.push('custom');
@@ -363,20 +376,37 @@
     paintSettings();
   }
 
-  function chipGroup(sel, values, label, key) {
+  function segGroup(sel, values, label, key) {
     var el = $(sel);
     el.innerHTML = values.map(function (v, i) {
-      return '<button class="chip" data-i="' + i + '">' + esc(label(v)) + '</button>';
+      return '<button data-i="' + i + '">' + label(v) + '</button>';
     }).join('');
     el.onclick = function (e) {
-      var b = e.target.closest('.chip');
+      var b = e.target.closest('button');
       if (!b) return;
       cfg[key] = values[+b.getAttribute('data-i')];
       paintSettings();
       sendSettings();
     };
-    el.setAttribute('data-key', key);
     el._values = values;
+    el._key = key;
+  }
+
+  function stepper(sel, values, key, what) {
+    var el = $(sel);
+    el.innerHTML = '<button aria-label="Menos ' + what + '" data-d="-1">−</button><output aria-live="polite"></output><button aria-label="Más ' + what + '" data-d="1">+</button>';
+    el.onclick = function (e) {
+      var b = e.target.closest('button');
+      if (!b) return;
+      var i = values.indexOf(cfg[key]);
+      if (i < 0) i = 0;
+      i = Math.max(0, Math.min(values.length - 1, i + (+b.getAttribute('data-d'))));
+      cfg[key] = values[i];
+      paintSettings();
+      sendSettings();
+    };
+    el._values = values;
+    el._key = key;
   }
 
   function paintSettings() {
@@ -384,25 +414,35 @@
     document.querySelectorAll('#cats .cat').forEach(function (b) {
       b.classList.toggle('on', cfg.categories.indexOf(b.getAttribute('data-id')) >= 0);
     });
-    ['#optMode', '#optRounds', '#optSeconds', '#optTol', '#optHints'].forEach(function (sel) {
+    ['#optMode', '#optTol'].forEach(function (sel) {
       var el = $(sel);
       if (!el) return;
-      var key = el.getAttribute('data-key');
-      el.querySelectorAll('.chip').forEach(function (b) {
-        b.classList.toggle('on', el._values[+b.getAttribute('data-i')] === cfg[key]);
+      el.querySelectorAll('button').forEach(function (b) {
+        b.classList.toggle('on', el._values[+b.getAttribute('data-i')] === cfg[el._key]);
       });
     });
-    var td = $('#tolDesc');
-    if (td) td.textContent = TOLERANCE[cfg.tolerance].desc;
+    ['#stRounds', '#stSeconds'].forEach(function (sel) {
+      var el = $(sel);
+      if (!el) return;
+      var i = el._values.indexOf(cfg[el._key]);
+      el.querySelector('output').textContent = cfg[el._key];
+      el.querySelector('[data-d="-1"]').disabled = i <= 0;
+      el.querySelector('[data-d="1"]').disabled = i >= el._values.length - 1;
+    });
     var choice = cfg.mode === 'choice';
-    var md = $('#modeDesc');
-    if (md) md.textContent = modeOf(cfg.mode).desc;
-    var ts = $('#tolSetting');
-    if (ts) ts.hidden = choice; // con opciones no hay ortografía que calificar
-    var hl = $('#hintsLabel');
-    if (hl) hl.textContent = choice ? 'Ayuda 50/50 a mitad de tiempo' : 'Pista a mitad de tiempo';
-    var hd = $('#hintsDesc');
-    if (hd) hd.textContent = choice ? 'Quita dos opciones incorrectas.' : 'Muestra la primera letra y cuántas letras tiene.';
+    $('#modeDesc').textContent = modeOf(cfg.mode).desc;
+    $('#tolDesc').textContent = TOLERANCE[cfg.tolerance].desc;
+    $('#tolSetting').hidden = choice; // con opciones no hay ortografía que calificar
+    $('#hintsLabel').textContent = choice ? 'Ayuda 50/50 a mitad de tiempo' : 'Pista a mitad de tiempo';
+    $('#hintsDesc').textContent = choice ? 'Quita dos opciones incorrectas.' : 'Muestra la primera letra y cuántas letras tiene.';
+    $('#hintsSwitch').classList.toggle('on', !!cfg.hints);
+    $('#optHints').setAttribute('aria-pressed', cfg.hints ? 'true' : 'false');
+    var n = cfg.categories.length;
+    $('#catTitle').textContent = 'Categorías · ' + n;
+    var totalCats = document.querySelectorAll('#cats .cat').length;
+    $('#allCats').textContent = n >= totalCats - (cfg.custom.trim() ? 0 : 1) ? 'Ninguna' : 'Todas';
+    $('#startSub').textContent = modeOf(cfg.mode).name + ' · ' + cfg.rounds + ' preguntas · ' + cfg.seconds + ' s · ' +
+      plural(n, 'categoría', 'categorías');
   }
 
   function sendSettings() {
@@ -413,21 +453,21 @@
   function updateLobby(s) {
     var jb = $('#joinBox');
     if (s.you.host) {
-      jb.innerHTML = '<h3>📲 Invita a tus amigos</h3>' +
+      jb.innerHTML = '<span class="eyebrow">' + icon('wifi', 's') + 'Para unirse</span>' +
         (s.joinUrls.length
-          ? '<div class="muted">Conéctense al mismo Wi-Fi que tú (o a tu punto de acceso). Luego abren la app y tocan <b>Unirme</b>, o escriben en el navegador:</div>' +
-            '<div class="join-urls">' + s.joinUrls.map(function (u) { return '<div class="join-url">' + esc(u.replace('http://', '')) + '</div>'; }).join('') + '</div>'
-          : '<div class="err">No encontramos tu dirección en la red. Conéctate a un Wi-Fi o activa tu punto de acceso (hotspot).</div>');
+          ? s.joinUrls.map(function (u) { return '<div class="addr">' + esc(u.replace('http://', '')) + '</div>'; }).join('') +
+            '<p class="muted" style="margin:0">Mismo Wi-Fi (o tu punto de acceso). Abren la app y tocan <b style="color:#fff">Unirme</b>, o escriben esta dirección en el navegador.</p>'
+          : '<p style="margin:0;font-weight:700">No encontramos tu dirección en la red. Conéctate a un Wi-Fi o activa tu punto de acceso (hotspot).</p>');
     } else {
-      jb.innerHTML = '<h3>¡Estás dentro, ' + esc(s.you.name) + '! ✅</h3><div class="muted">Cuando el anfitrión empiece, verás la primera pista.</div>';
+      jb.innerHTML = '<h2>¡Estás dentro, ' + esc(s.you.name) + '!</h2><p class="muted" style="margin:0">Cuando el anfitrión empiece, verás la primera pista.</p>';
     }
 
-    $('#pcount').textContent = '(' + s.players.length + ')';
+    $('#pcount').textContent = s.players.length;
     var pl = $('#plist');
     pl.innerHTML = s.players.map(function (p) {
       return '<span class="player' + (p.connected ? '' : ' off') + '">' + avatar(p) + esc(p.name) +
-        (p.host ? ' 👑' : '') + (p.id === s.you.id ? ' (tú)' : '') +
-        (s.you.host && !p.host ? '<button class="x" data-kick="' + esc(p.id) + '" title="Sacar">✕</button>' : '') + '</span>';
+        (p.host ? icon('crown', 's') : '') + (p.id === s.you.id ? ' (tú)' : '') +
+        (s.you.host && !p.host ? '<button class="x" data-kick="' + esc(p.id) + '" aria-label="Sacar a ' + esc(p.name) + '">' + icon('x', 's') + '</button>' : '') + '</span>';
     }).join('');
     pl.onclick = function (e) {
       var b = e.target.closest('[data-kick]');
@@ -436,23 +476,24 @@
     };
 
     if (s.you.host) {
-      var ci = $('#customInfo');
       var n = s.settings.customCount;
-      ci.textContent = n ? n + (n === 1 ? ' pregunta lista' : ' preguntas listas') : 'Aún no hay preguntas personalizadas.';
+      $('#customInfo').textContent = n ? plural(n, 'pregunta lista', 'preguntas listas') : 'Aún no hay preguntas personalizadas.';
       var cc = document.querySelector('[data-count="custom"]');
-      if (cc) cc.textContent = plural(n);
+      if (cc) cc.textContent = plural(n, 'pregunta', 'preguntas');
     } else {
       var names = {};
-      (s.categories || []).forEach(function (c) { names[c.id] = c.icon + ' ' + c.name; });
-      names.custom = '✍️ Personalizada';
-      var cats = s.settings.categories.map(function (id) { return names[id] || id; });
+      (s.categories || []).forEach(function (c) { names[c.id] = c; });
+      names.custom = { id: 'custom', name: 'Personalizada' };
+      var cats = s.settings.categories.map(function (id) { return names[id] || { id: id, name: id }; });
+      var choice = s.settings.mode === 'choice';
       $('#summary').innerHTML =
-        '<div class="chips" style="margin-bottom:10px">' + (cats.length ? cats.map(function (c) { return '<span class="chip">' + esc(c) + '</span>'; }).join('') : '<span class="muted">Sin categorías aún</span>') + '</div>' +
-        '<div class="muted">Modo <b>' + esc(modeOf(s.settings.mode).name) + '</b> · ' + s.settings.rounds + ' preguntas · ' +
+        '<div class="cat-grid">' + (cats.length ? cats.map(function (c) {
+          return '<span class="cat on">' + catIcon(c.id, c.icon) + '<span class="nm">' + esc(c.name) + '</span></span>';
+        }).join('') : '<span class="muted">Sin categorías aún</span>') + '</div>' +
+        '<p class="muted" style="margin:0">Modo <b>' + esc(modeOf(s.settings.mode).name) + '</b> · ' + s.settings.rounds + ' preguntas · ' +
         s.settings.seconds + ' s cada una' +
-        (s.settings.mode === 'choice'
-          ? (s.settings.hints ? ' · con ayuda 50/50' : '')
-          : ' · ortografía: ' + TOLERANCE[s.settings.tolerance].name.toLowerCase() + (s.settings.hints ? ' · con pistas' : '')) + '</div>';
+        (choice ? (s.settings.hints ? ' · con ayuda 50/50' : '')
+          : ' · ortografía ' + TOLERANCE[s.settings.tolerance].name.toLowerCase() + (s.settings.hints ? ' · con pistas' : '')) + '</p>';
     }
   }
 
@@ -460,29 +501,28 @@
 
   function buildQuestion(s) {
     var r = s.round;
-    var html = '<div class="screen">' + topBar(s, roundBar(s)) +
-      '<div><div class="timer" id="timer"><div class="bar" id="tbar"></div></div><div class="tnum" id="tnum"></div></div>' +
-      '<div class="card prompt-card"><div class="ask">' + esc(r.ask) + '</div>' +
+    var html = '<div class="screen">' + roundBar(s) +
+      '<div class="timer-row"><div class="timer" id="timer"><div class="bar" id="tbar"></div></div><div class="tnum" id="tnum" aria-live="off"></div></div>' +
+      '<section class="card prompt-card"><div class="ask">' + esc(r.ask) + '</div>' +
       (r.image ? clueImage(r, s.you.answered ? ' still' : '') :
         '<div class="prompt t-' + esc(r.type) + (s.you.answered ? ' still' : '') + '">' + esc(r.prompt) + '</div>') +
-      '<div class="hint" id="hint"></div></div>';
+      '<div class="hint" id="hint"></div></section>';
     if (r.options && !s.you.answered) {
       html += '<div class="options" id="opts">' + r.options.map(function (o, i) {
-        return '<button class="opt o' + (i % 4) + '" data-i="' + i + '"><span class="sh">' + SHAPES[i % 4] + '</span>' +
-          '<span class="ot">' + esc(o) + '</span></button>';
+        return '<button class="opt o' + (i % 4) + '" data-i="' + i + '">' + shape(i) + '<span>' + esc(o) + '</span></button>';
       }).join('') + '</div>';
-    } else if (r.options) {
-      html += '<div class="card sent">✅ Elegiste: <b>«' + esc(s.you.answer) + '»</b><div class="muted">Los puntos se ven cuando termine la ronda.</div></div>';
-    } else if (!s.you.answered) {
-      html += '<form class="answer" id="ansForm"><input id="ans" maxlength="80" autocomplete="off" autocorrect="off" ' +
-        'autocapitalize="sentences" spellcheck="false" enterkeyhint="send" placeholder="Escribe tu respuesta…">' +
-        '<button class="btn">Enviar</button></form>';
+    } else if (s.you.answered) {
+      html += '<div class="card sent"><span class="ok">' + icon('check') + '</span><div><div class="muted">' +
+        (r.options ? 'Elegiste' : 'Enviaste') + '</div><b>«' + esc(s.you.answer) + '»</b><div class="muted">Los puntos se ven cuando termine la ronda.</div></div></div>';
     } else {
-      html += '<div class="card sent">✅ Enviaste: <b>«' + esc(s.you.answer) + '»</b><div class="muted">Los puntos se ven cuando termine la ronda.</div></div>';
+      html += '<form class="answer" id="ansForm"><input id="ans" maxlength="80" autocomplete="off" autocorrect="off" ' +
+        'autocapitalize="sentences" spellcheck="false" enterkeyhint="send" placeholder="Escribe tu respuesta…" aria-label="Tu respuesta">' +
+        '<button class="btn" aria-label="Enviar respuesta">' + icon('arrow', 'l') + '</button></form>' +
+        '<p class="muted" style="margin:-6px 0 0">Tildes y mayúsculas no importan. Si te equivocas en una letra, igual sumas.</p>';
     }
-    html += '<div class="progress-txt" id="answeredInfo"></div><div class="plist mini" id="plist"></div>';
+    html += '<div class="progress-row"><div class="stackav" id="plist"></div><span id="answeredInfo"></span></div>';
     if (s.you.host) {
-      html += '<div class="host-tools"><button class="link" id="skipBtn">Cerrar la ronda ⏭</button>' +
+      html += '<div class="host-tools"><button class="link" id="skipBtn">Cerrar la ronda</button>' +
         '<button class="link" id="endBtn">Terminar partida</button></div>';
     }
     app.innerHTML = html + '</div>';
@@ -528,22 +568,23 @@
 
   function updateQuestion(s) {
     var r = s.round;
-    $('#hint').classList.toggle('plain', !!r.options);
+    var hint = $('#hint');
+    hint.classList.toggle('plain', !!r.options);
     if (r.options) {
       var removed = r.removed || [];
-      $('#hint').textContent = removed.length ? '💡 Ayuda 50/50: quitamos ' + removed.length + (removed.length === 1 ? ' opción' : ' opciones') : '';
+      hint.innerHTML = removed.length ? icon('bulb', 's') + 'Ayuda 50/50: quitamos ' + plural(removed.length, 'opción', 'opciones') : '';
       removed.forEach(function (i) {
         var b = document.querySelector('.opt[data-i="' + i + '"]');
         if (b) { b.disabled = true; b.classList.add('gone'); }
       });
     } else {
-      $('#hint').textContent = r.hint ? '💡 ' + r.hint : '';
+      hint.innerHTML = r.hint ? icon('bulb') + esc(r.hint) : '';
     }
     $('#answeredInfo').textContent = r.answeredCount + ' de ' + r.playerCount + ' ya respondieron';
     $('#plist').innerHTML = s.players.map(function (p) {
-      return '<span class="player' + (p.connected ? '' : ' off') + '" title="' + esc(p.name) + '">' + avatar(p, p.answered) + '</span>';
+      return avatar(p, (p.answered ? '' : 'pending') + (p.connected ? '' : ' off'), p.answered);
     }).join('');
-    $('#myScore').textContent = '⭐ ' + s.you.score;
+    $('#myScore').innerHTML = STAR + fmt(s.you.score);
   }
 
   function tickTimer() {
@@ -552,22 +593,19 @@
     if (!bar) return;
     var rem = Math.max(0, deadline - Date.now());
     bar.style.width = (100 * rem / st.round.durationMs) + '%';
-    num.textContent = Math.ceil(rem / 1000);
     timer.classList.toggle('low', rem < 5000);
-    if (rem === 0) {
-      var form = $('#ansForm');
-      if (form && !form.classList.contains('closed')) {
-        form.classList.add('closed');
-        form.querySelector('input').disabled = true;
-        form.querySelector('button').disabled = true;
-        num.textContent = '⏰';
-      }
-      var opts = $('#opts');
-      if (opts && !opts.classList.contains('closed')) {
-        opts.classList.add('closed');
-        opts.querySelectorAll('.opt').forEach(function (b) { b.disabled = true; });
-        num.textContent = '⏰';
-      }
+    if (rem > 0) { num.textContent = Math.ceil(rem / 1000); return; }
+    num.innerHTML = icon('clock');
+    var form = $('#ansForm');
+    if (form && !form.classList.contains('closed')) {
+      form.classList.add('closed');
+      form.querySelector('input').disabled = true;
+      form.querySelector('button').disabled = true;
+    }
+    var opts = $('#opts');
+    if (opts && !opts.classList.contains('closed')) {
+      opts.classList.add('closed');
+      opts.querySelectorAll('.opt').forEach(function (b) { b.disabled = true; });
     }
   }
   setInterval(tickTimer, 100);
@@ -576,19 +614,21 @@
 
   function buildReveal(s) {
     var r = s.round, rv = s.reveal;
-    var html = '<div class="screen">' + topBar(s, roundBar(s)) +
-      '<div class="card answer-card"><div class="muted">La respuesta era</div><div class="big-answer">' + esc(rv.answer) + '</div>' +
+    prevRanks = lastRanks;
+    var html = '<div class="screen">' + roundBar(s) +
+      '<section class="card dark answer-card"><div class="clue">' +
       (r.image ? clueImage(r, ' small') : '<div class="prompt small t-' + esc(r.type) + '">' + esc(r.prompt) + '</div>') + '</div>' +
-      (rv.picks ? '<section class="card"><h3>Opciones</h3><div class="rows" id="optResults"></div></section>' : '') +
-      '<div class="card you-card" id="youCard"></div>' +
-      '<section class="card"><h3>' + (rv.picks ? 'Lo que eligió cada uno' : 'Lo que escribió cada uno') + '</h3><div class="rows" id="results"></div></section>' +
-      '<section class="card"><h3>Tabla de posiciones</h3><div class="rows" id="board"></div></section>';
+      '<div><div class="eyebrow">La respuesta era</div><div class="big-answer">' + esc(rv.answer) + '</div></div></section>' +
+      '<section class="card you-card" id="youCard"></section>' +
+      (rv.picks ? '<section class="card"><h2>Opciones</h2><div class="rows" id="optResults"></div></section>' : '') +
+      '<section class="card"><h2>' + (rv.picks ? 'Lo que eligió cada uno' : 'Lo que escribió cada uno') + '</h2><div class="rows" id="results"></div></section>' +
+      '<section class="stack"><h2>Posiciones</h2><div class="board" id="board"></div></section>';
     if (s.you.host) {
-      html += '<div class="sticky-bottom"><div><button class="btn big" id="nextBtn">' +
-        (rv.last ? 'Ver el podio 🏆' : 'Siguiente pregunta ➜') + '</button></div></div>' +
-        '<div class="host-tools"><button class="link" id="endBtn">Terminar partida</button></div>';
+      html += '<div class="host-tools"><button class="link" id="endBtn">Terminar partida</button></div>' +
+        '<div class="sticky-bottom"><div><button class="btn" id="nextBtn">' +
+        (rv.last ? icon('trophy', 'l') + 'Ver el podio' : 'Siguiente pregunta' + icon('arrow', 'l')) + '</button></div></div>';
     } else {
-      html += '<div class="waiting">⏳ El anfitrión pasará a la siguiente<span class="dots"></span></div>';
+      html += '<div class="waiting"><span class="spin"></span>El anfitrión pasará a la siguiente</div>';
     }
     app.innerHTML = html + '</div>';
     var nb = $('#nextBtn');
@@ -602,61 +642,77 @@
 
   function updateReveal(s) {
     var rv = s.reveal;
+    var choice = !!rv.picks;
     var mine = null;
     rv.results.forEach(function (x) { if (x.id === s.you.id) mine = x; });
     var yc = $('#youCard');
     if (mine) {
-      yc.className = 'card you-card acc-' + accClass(mine.accuracy);
-      yc.innerHTML = '<div class="lbl">' + esc(mine.label) + (mine.accuracy > 0 && mine.accuracy < 1 ? ' (' + pct(mine.accuracy) + ')' : '') + '</div>' +
-        '<div class="pts">+' + mine.points + '</div>' +
-        (mine.text ? '<div class="muted">' + (rv.picks ? 'Elegiste' : 'Escribiste') + ' «' + esc(mine.text) + '»</div>' : '') +
-        (mine.first ? '<div class="gain">⚡ ¡Fuiste el primero en acertar! +100</div>' : '') +
-        (mine.streak >= 3 ? '<div class="gain">🔥 Racha de ' + mine.streak + '</div>' : '');
+      var c = accClass(mine.accuracy);
+      var ring = choice || mine.accuracy === 0 || mine.accuracy >= 1
+        ? icon(mine.accuracy >= 1 ? 'check' : 'x', 'l') : pct(mine.accuracy);
+      yc.className = 'card you-card acc-' + c;
+      yc.innerHTML = '<div class="ring">' + ring + '</div><div class="info"><div class="lbl">' + esc(mine.label) + '</div>' +
+        (mine.text ? '<div class="muted">' + (choice ? 'Elegiste' : 'Escribiste') + ' «' + esc(mine.text) + '»</div>' : '<div class="muted">No alcanzaste a responder</div>') +
+        ((mine.first || mine.streak >= 3) ? '<div class="extra">' +
+          (mine.first ? '<span class="badge b-hot">' + icon('bolt', 's') + 'Primero · +100</span>' : '') +
+          (mine.streak >= 3 ? '<span class="badge b-hot">' + icon('flame', 's') + 'Racha de ' + mine.streak + '</span>' : '') + '</div>' : '') +
+        '</div><span class="pts">+' + fmt(mine.points) + '</span>';
     } else {
-      yc.style.display = 'none';
+      yc.hidden = true;
     }
 
     var or = $('#optResults');
-    if (or && rv.picks) {
+    if (or && choice) {
       var total = rv.picks.reduce(function (a, b) { return a + b; }, 0) || 1;
       or.innerHTML = s.round.options.map(function (o, i) {
         var good = i === rv.correct;
-        return '<div class="row opt-row' + (good ? ' good' : '') + '"><span class="sh-badge o' + (i % 4) + '">' + SHAPES[i % 4] + '</span>' +
-          '<div class="info"><div class="nm">' + esc(o) + (good ? ' ✅' : '') + (i === s.you.choice ? ' <span class="muted">(tú)</span>' : '') + '</div>' +
-          '<div class="meter"><i style="width:' + Math.round(100 * rv.picks[i] / total) + '%;background:' + (good ? 'var(--ok)' : 'var(--muted)') + '"></i></div></div>' +
+        return '<div class="row opt-row' + (good ? ' good' : '') + '"><span class="sh-badge o' + (i % 4) + '">' + shape(i, '') + '</span>' +
+          '<div class="info"><div class="nm">' + esc(o) + (good ? icon('check', 's') : '') + (i === s.you.choice ? ' <span class="muted">(tú)</span>' : '') + '</div>' +
+          '<div class="meter"><i style="width:' + Math.round(100 * rv.picks[i] / total) + '%;background:' + (good ? 'var(--green)' : 'var(--faint)') + '"></i></div></div>' +
           '<div class="pts' + (rv.picks[i] ? '' : ' zero') + '">' + rv.picks[i] + '</div></div>';
       }).join('');
     }
 
     $('#results').innerHTML = rv.results.map(function (x) {
-      return '<div class="row">' + avatar(x) + '<div class="info"><div class="nm">' + esc(x.name) +
-        '<span class="badge b-' + accClass(x.accuracy) + '">' + esc(x.label) + '</span>' +
-        (x.first ? ' ⚡' : '') + (x.streak >= 3 ? ' 🔥' + x.streak : '') + '</div>' +
-        '<div class="txt">' + (x.text ? '«' + esc(x.text) + '»' : '—') + '</div>' +
+      var c = accClass(x.accuracy);
+      var badge = c === 'part' ? 'Casi · ' + pct(x.accuracy) : x.label;
+      return '<div class="row">' + avatar(x) + '<div class="info"><div class="nm">' + esc(x.name) + (x.id === s.you.id ? ' (tú)' : '') +
+        '<span class="badge b-' + c + '">' + esc(badge) + '</span>' +
+        (x.first ? '<span class="badge b-hot">' + icon('bolt', 's') + '</span>' : '') +
+        (x.streak >= 3 ? '<span class="badge b-hot">' + icon('flame', 's') + x.streak + '</span>' : '') + '</div>' +
+        '<div class="txt">' + (x.text ? '«' + esc(x.text) + '»' : 'Sin respuesta') + '</div>' +
         '<div class="meter"><i style="width:' + pct(x.accuracy) + ';background:' + accColor(x.accuracy) + '"></i></div></div>' +
-        '<div class="pts' + (x.points ? '' : ' zero') + '">+' + x.points + '</div></div>';
+        '<div class="pts' + (x.points ? '' : ' zero') + '">+' + fmt(x.points) + '</div></div>';
     }).join('');
 
+    var ranks = {};
     $('#board').innerHTML = s.players.map(function (p, i) {
-      return '<div class="row"><div class="rank">' + (i + 1) + '</div>' + avatar(p) +
-        '<div class="info"><div class="nm">' + esc(p.name) + (p.id === s.you.id ? ' (tú)' : '') + '</div></div>' +
-        (p.gained ? '<span class="gain">+' + p.gained + '</span>' : '') +
-        '<div class="pts">' + p.score + '</div></div>';
+      ranks[p.id] = i + 1;
+      var up = prevRanks[p.id] && prevRanks[p.id] > i + 1;
+      return '<div class="line' + (p.id === s.you.id ? ' me' : '') + '"><span class="rank">' + (i + 1) + '</span>' + avatar(p) +
+        '<span class="nm">' + esc(p.name) + (p.id === s.you.id ? ' (tú)' : '') + (up ? ' ' + icon('up', 's') : '') + '</span>' +
+        (p.gained ? '<span class="gain">+' + fmt(p.gained) + '</span>' : '') +
+        '<span class="sc">' + fmt(p.score) + '</span></div>';
     }).join('');
-    $('#myScore').textContent = '⭐ ' + s.you.score;
+    lastRanks = ranks;
+    $('#myScore').innerHTML = STAR + fmt(s.you.score);
   }
 
   // ---- Podio
 
   function buildFinal(s) {
-    var html = '<div class="screen">' + topBar(s) +
-      '<div class="card" style="text-align:center"><div class="logo">🏆</div><h1 style="font-size:28px">¡Fin del juego!</h1>' +
-      '<div class="podium" id="podium"></div></div>' +
-      '<section class="card"><h3>Clasificación final</h3><div class="rows" id="board"></div></section>';
+    lastRanks = {};
+    var html = '<div class="screen">' +
+      '<header class="top"><span class="grow title">Fin del juego</span><button class="pill-btn" id="leaveBtn">Salir</button></header>' +
+      '<div class="final-head"><svg class="pop-in" width="64" height="64" viewBox="0 0 24 24" fill="#FFC233" stroke="#1A1433" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">' +
+      '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4" fill="none"/><path d="M17 6h3a3 3 0 0 1-3 4" fill="none"/><path d="M10 14h4v3h-4z"/><path d="M8 20h8v-3H8z"/></svg>' +
+      '<h1 id="winner"></h1><p id="winnerSub"></p></div>' +
+      '<div class="podium" id="podium"></div>' +
+      '<section class="card final-list" id="board"></section>';
     if (s.you.host) {
-      html += '<div class="sticky-bottom"><div><button class="btn big" id="againBtn">Jugar otra vez 🔁</button></div></div>';
+      html += '<div class="sticky-bottom"><div><button class="btn sun" id="againBtn">' + icon('back', 'l') + 'Jugar otra vez</button></div></div>';
     } else {
-      html += '<div class="waiting">El anfitrión puede empezar otra partida<span class="dots"></span></div>';
+      html += '<div class="waiting">El anfitrión puede empezar otra partida</div>';
     }
     app.innerHTML = html + '</div>';
     var ab = $('#againBtn');
@@ -665,32 +721,34 @@
 
   function updateFinal(s) {
     var top = s.players.slice(0, 3);
-    var order = [1, 0, 2];
-    var medals = ['🥇', '🥈', '🥉'];
-    $('#podium').innerHTML = order.map(function (i) {
+    var w = top[0];
+    var tie = w && top[1] && top[1].score === w.score;
+    $('#winner').textContent = !w ? '¡Fin!' : tie ? '¡Empate!' : (w.id === s.you.id ? '¡Ganaste!' : '¡Ganó ' + w.name + '!');
+    $('#winnerSub').textContent = w ? plural(w.exact, 'respuesta exacta', 'respuestas exactas') + ' · ' + fmt(w.score) + ' puntos' : '';
+    $('#podium').innerHTML = [1, 0, 2].map(function (i) {
       var p = top[i];
       if (!p) return '<div class="pod"></div>';
-      return '<div class="pod p' + (i + 1) + '">' + avatar(p) + '<div class="nm">' + esc(p.name) + '</div>' +
-        '<div class="sc">' + p.score + ' pts</div><div class="block">' + medals[i] + '</div></div>';
+      return '<div class="pod p' + (i + 1) + '">' + (i === 0 ? icon('crown', 'l') : '') + avatar(p) +
+        '<span class="nm">' + esc(p.name) + (p.id === s.you.id ? ' (tú)' : '') + '</span>' +
+        '<div class="block"><b>' + (i + 1) + '</b><span>' + fmt(p.score) + '</span></div></div>';
     }).join('');
-    $('#board').innerHTML = s.players.map(function (p, i) {
-      return '<div class="row"><div class="rank">' + (i + 1) + '</div>' + avatar(p) +
-        '<div class="info"><div class="nm">' + esc(p.name) + (p.id === s.you.id ? ' (tú)' : '') + '</div>' +
-        '<div class="txt">' + p.exact + (p.exact === 1 ? ' respuesta exacta' : ' respuestas exactas') + '</div></div>' +
-        '<div class="pts">' + p.score + '</div></div>';
+    var crown = document.querySelector('.pod.p1 .ic');
+    if (crown) crown.style.color = '#FFC233';
+    $('#board').innerHTML = s.players.slice(3).map(function (p, i) {
+      return '<div class="line"><span class="rank">' + (i + 4) + '</span>' + avatar(p) +
+        '<span class="nm">' + esc(p.name) + (p.id === s.you.id ? ' (tú)' : '') + '</span><span class="sc">' + fmt(p.score) + '</span></div>';
     }).join('');
-    $('#myScore').textContent = '⭐ ' + s.you.score;
   }
 
   function confetti() {
     var box = document.createElement('div');
     box.className = 'confetti';
-    var colors = ['#ffcc33', '#ff5c8a', '#4dc9ff', '#3ddc97', '#b44bff'];
-    for (var i = 0; i < 80; i++) {
+    var colors = ['#FFC233', '#FFFFFF', '#D63A4E', '#2463EB', '#138A55'];
+    for (var i = 0; i < 70; i++) {
       var c = document.createElement('i');
       c.style.left = Math.random() * 100 + '%';
       c.style.background = colors[i % colors.length];
-      c.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+      c.style.animationDuration = (2.2 + Math.random() * 2.5) + 's';
       c.style.animationDelay = Math.random() * 0.8 + 's';
       box.appendChild(c);
     }

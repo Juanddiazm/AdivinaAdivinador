@@ -325,6 +325,8 @@ public final class GameServer {
         if (file.endsWith(".json")) return "application/json; charset=utf-8";
         if (file.endsWith(".png")) return "image/png";
         if (file.endsWith(".svg")) return "image/svg+xml";
+        if (file.endsWith(".woff2")) return "font/woff2";
+        if (file.endsWith(".txt")) return "text/plain; charset=utf-8";
         if (file.endsWith(".webp")) return "image/webp";
         return "application/octet-stream";
     }

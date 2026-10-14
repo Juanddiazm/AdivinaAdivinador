@@ -5,46 +5,52 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Adivina Adivinador</title>
 <link rel="stylesheet" href="web/style.css">
+<script src="web/icons.js"></script>
 </head>
 <body>
 <div class="screen center">
-  <div class="logo bounce">🔮</div>
-  <h1>Adivina<br>Adivinador</h1>
-  <p class="muted">Países, marcas, lugares, películas y mucho más.<br>¡Aunque lo escribas mal, algo te llevas!</p>
+  <div class="brand" id="brand">
+    <div><h1>Adivina<br>Adivinador</h1><p>Aunque lo escribas mal, algo te llevas.</p></div>
+  </div>
 
   <div class="card">
     <label for="name">Tu nombre</label>
     <input id="name" maxlength="16" autocomplete="off" placeholder="¿Cómo te llamas?">
   </div>
-  <div class="err" id="err"></div>
+  <div class="err" id="err" role="alert"></div>
 
-  <button class="btn big" id="resumeBtn" hidden>↩️ Volver a mi partida</button>
-  <button class="btn big" id="hostBtn">👑 Crear partida</button>
-  <button class="btn big secondary" id="joinBtn">🙋 Unirme a una partida</button>
+  <div class="stack">
+    <button class="btn" id="resumeBtn" hidden></button>
+    <button class="btn" id="hostBtn"></button>
+    <button class="btn sun" id="joinBtn"></button>
+  </div>
 
   <section class="card" id="joinPanel" hidden>
-    <h3>Partidas en tu red</h3>
+    <div class="row-head">
+      <h2>Partidas en tu red</h2>
+      <button class="icon-btn" id="rescan" aria-label="Buscar otra vez"></button>
+    </div>
     <div class="found" id="found"></div>
-    <button class="chip" id="rescan">🔄 Buscar otra vez</button>
-    <h3 style="margin-top:18px">¿No aparece?</h3>
-    <p class="muted" style="margin-top:0">Escribe la dirección que ve el anfitrión en su pantalla:</p>
-    <form class="answer" id="manual">
-      <input id="addr" placeholder="192.168.1.5:8080" autocomplete="off" autocapitalize="off" inputmode="url">
-      <button class="btn">Ir</button>
+    <form class="stack" id="manual" style="gap:6px">
+      <label for="addr" style="text-transform:none;letter-spacing:0;font-weight:600;font-size:14px">¿No aparece? Escribe la dirección que ve el anfitrión</label>
+      <div class="inline">
+        <input id="addr" placeholder="192.168.1.5:8080" autocomplete="off" autocapitalize="off" inputmode="url">
+        <button class="btn ink small">Ir</button>
+      </div>
     </form>
   </section>
 
   <details class="card">
     <summary>¿Cómo se juega?</summary>
     <ol>
-      <li>Una persona toca <b>Crear partida</b> y elige categorías, número de preguntas, tiempo y el modo de juego: <b>✍️ Escribir</b> la respuesta o <b>🔘 Opciones</b> (elegir entre 4).</li>
+      <li>Una persona toca <b>Crear partida</b> y elige categorías, número de preguntas, tiempo y el modo: <b>Escribir</b> la respuesta o elegir entre 4 <b>Opciones</b>.</li>
       <li>Los demás se conectan al <b>mismo Wi-Fi</b> (o al punto de acceso del anfitrión) y tocan <b>Unirme</b>. También pueden entrar desde el navegador con la dirección que muestra el anfitrión, sin instalar nada.</li>
-      <li>Aparece una pista: una bandera, una foto, un logo, emojis, letras revueltas… y todos escriben la respuesta. Algunos logos empiezan pixelados y se van aclarando: ¡entre antes lo adivines, más puntos!</li>
-      <li><b>Exacto</b> = puntos completos. <b>Con errores</b> («Olombia» por Colombia) = parte de los puntos. Entre más rápido, más puntos, y el primero en acertar gana ⚡ +100.</li>
+      <li>Aparece una pista: una bandera, una foto, un logo, emojis, letras revueltas… Algunos logos empiezan pixelados y se van aclarando: entre antes lo adivines, más puntos.</li>
+      <li><b>Exacto</b> = puntos completos. <b>Con errores</b> («Olombia» por Colombia) = parte de los puntos. Entre más rápido, más puntos, y el primero en acertar gana +100.</li>
       <li>Si escribes otra respuesta válida (por ejemplo «Irak» cuando era «Irán») no suma.</li>
-      <li>En modo <b>Opciones</b> solo la buena suma puntos; a mitad de tiempo la ayuda 50/50 quita dos opciones malas.</li>
+      <li>En modo <b>Opciones</b> solo la buena suma; a mitad de tiempo la ayuda 50/50 quita dos opciones malas.</li>
     </ol>
-    <p class="credits-link"><a href="web/creditos.html">📷 Créditos de las fotos y logos</a></p>
+    <p class="credits-link"><a href="web/creditos.html">Créditos de fotos, logos y fuentes</a></p>
   </details>
 </div>
 <div id="toast"></div>
@@ -56,18 +62,27 @@
   var $ = function (s) { return document.querySelector(s); };
   var nameEl = $('#name'), err = $('#err');
 
+  $('#brand').insertAdjacentHTML('afterbegin', logoMark('pop-in', true));
+  $('#resumeBtn').innerHTML = icon('back', 'l') + 'Volver a mi partida';
+  $('#hostBtn').innerHTML = icon('crown', 'l') + 'Crear partida';
+  $('#joinBtn').innerHTML = icon('login', 'l') + 'Unirme a una partida';
+  $('#rescan').innerHTML = icon('refresh');
+
   var m = location.hash.match(/error=([^&]*)/);
   if (m) err.textContent = decodeURIComponent(m[1]);
 
   if (B) {
     nameEl.value = B.getName() || '';
-    if (B.isHosting()) $('#resumeBtn').hidden = false;
+    if (B.isHosting()) {
+      $('#resumeBtn').hidden = false;
+      $('#hostBtn').classList.add('light');
+    }
   }
 
   function myName() {
     var n = nameEl.value.trim();
     if (!n) {
-      err.textContent = 'Primero escribe tu nombre 👆';
+      err.textContent = 'Primero escribe tu nombre.';
       nameEl.focus();
       nameEl.classList.add('shake');
       setTimeout(function () { nameEl.classList.remove('shake'); }, 400);
@@ -90,21 +105,30 @@
   };
 
   function search() {
-    $('#found').innerHTML = '<div class="muted">🔎 Buscando partidas…</div>';
+    $('#found').innerHTML = '<div class="searching"><span class="spin"></span>Buscando partidas…</div>';
     if (B) B.discover();
     else window.onHostsFound([]);
+  }
+
+  var COLORS = ['#5B3DF5', '#138A55', '#D63A4E', '#2463EB', '#8A4B00', '#0E7490', '#A21CAF', '#1A1433'];
+  function colorFor(name) {
+    var h = 0;
+    for (var i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) % 9973;
+    return COLORS[h % COLORS.length];
   }
 
   window.onHostsFound = function (list) {
     var f = $('#found');
     if (!list.length) {
-      f.innerHTML = '<div class="muted">No encontramos partidas. Revisa que estén en el mismo Wi-Fi y que el anfitrión ya haya creado la partida.</div>';
+      f.innerHTML = '<p class="muted" style="margin:0">No encontramos partidas. Revisa que estén en el mismo Wi-Fi y que el anfitrión ya haya creado la partida.</p>';
       return;
     }
     f.innerHTML = list.map(function (h, i) {
-      var label = (h.host || 'Partida').replace(/[<>&"]/g, '');
-      return '<button class="btn ghost" data-i="' + i + '">👑 ' + label + ' <span class="muted">· ' + h.players +
-        (h.players === 1 ? ' jugador' : ' jugadores') + '</span></button>';
+      var label = (h.host || 'Partida').replace(/[<>&"']/g, '');
+      return '<button class="host-row" data-i="' + i + '"><span class="avatar" style="width:40px;height:40px;border:2px solid #1A1433;background:' +
+        colorFor(label) + '">' + (Array.from(label)[0] || '?').toUpperCase() + '</span>' +
+        '<span class="who"><b>Partida de ' + label + '</b><span class="muted">' + h.players +
+        (h.players === 1 ? ' jugador' : ' jugadores') + ' esperando</span></span>' + icon('chevron') + '</button>';
     }).join('');
     f.onclick = function (e) {
       var b = e.target.closest('[data-i]');

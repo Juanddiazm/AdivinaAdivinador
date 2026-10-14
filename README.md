@@ -76,6 +76,12 @@ Las preguntas están en [`app/src/main/assets/data/categorias.json`](app/src/mai
 - **Equipos**: jugar por parejas o equipos y sumar puntos en grupo.
 - **Modo dibujo**: uno dibuja en su pantalla y los demás adivinan (tipo Pictionary).
 
+## 🎨 Diseño
+
+Estilo «Concurso pop»: fondo lila claro, tarjetas blancas con contorno de tinta y sombra sólida, violeta `#5B3DF5` como color principal y amarillo sol `#FFC233` de acento. Títulos en **Bricolage Grotesque** y textos en **Figtree** (ambas SIL OFL, incluidas en el APK para funcionar sin internet). Íconos de línea propios en `app/src/main/assets/web/icons.js`.
+
+El ícono de la app (globo amarillo con «?» sobre violeta) se genera con `NODE_PATH=…/node_modules node tools/make_icons.js` (necesita Playwright).
+
 ## 🛠️ Para desarrolladores
 
 Todo es Java (sin librerías) + una página web:

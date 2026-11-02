@@ -15,6 +15,10 @@
   var settingsTimer = null;
   var prevRanks = {};     // posiciones antes de esta ronda (para la flecha de "subió")
   var lastRanks = {};
+  var muted = store('aa_mute') === '1'; // silencio elegido en este celular
+  var lastTick = '';                   // último "tic" de la cuenta regresiva (ronda:segundo)
+  var noop = function () { return 0; };
+  var Sound = window.Sound || { setEnabled: noop, play: noop, sfx: noop, tick: noop };
 
   var TOLERANCE = [
     { v: 0, name: 'Estricto', desc: 'Solo se perdona un error de dedo en palabras largas.' },
@@ -25,6 +29,12 @@
     { v: 'write', name: 'Escribir', icon: 'pencil', desc: 'Cada uno escribe la respuesta. Con errores de ortografía se gana una parte.' },
     { v: 'choice', name: 'Opciones', icon: 'grid', desc: 'Se elige entre 4 opciones. Más rápido y fácil, ideal para niños.' }
   ];
+  var MUSIC = {
+    off: { name: 'No', desc: 'Sin música ni sonidos.' },
+    host: { name: 'Mi celular', desc: 'Suena solo en tu celular, para que no se oigan varias canciones a destiempo.' },
+    all: { name: 'Todos', desc: 'Suena en el celular de cada jugador; cada uno puede silenciarla con el botón del parlante.' }
+  };
+  var TRACK_FOR = { lobby: 'sala', question: 'pregunta', reveal: 'resultado', final: 'final' };
   var ROUNDS = [5, 10, 15, 20, 30];
   var SECONDS = [10, 15, 20, 25, 30, 45, 60];
   var AVATAR_COLORS = ['#5B3DF5', '#138A55', '#D63A4E', '#2463EB', '#8A4B00', '#0E7490', '#A21CAF', '#1A1433'];
@@ -168,7 +178,11 @@
       if (s.round.index !== prevIdx || prevPhase !== 'question' || Math.abs(d - deadline) > 900) deadline = d;
     }
     var key = [s.phase, s.round ? s.round.index : '', s.you.answered ? 1 : 0, s.you.host ? 1 : 0].join('|');
+    var cue = null;
     if (key !== screenKey) {
+      if (s.phase === 'question' && s.round.index !== prevIdx) cue = 'go';
+      else if (s.phase === 'reveal' && prevPhase !== 'reveal') cue = resultCue(s);
+      else if (s.phase === 'final' && prevPhase !== 'final') cue = 'fanfare';
       screenKey = key;
       lastV = -1;
       build(s);
@@ -180,6 +194,53 @@
       update(s);
     }
     syncClueImage(s);
+    syncSound(s, cue);
+  }
+
+  // ------------------------------------------------------------------ música
+
+  // El anfitrión decide dónde suena: en ningún celular, solo en el suyo o en todos.
+  function musicAllowed(s) {
+    var m = (s.settings && s.settings.music) || 'host';
+    return m === 'all' || (m === 'host' && s.you.host);
+  }
+
+  function syncSound(s, cue) {
+    var allowed = musicAllowed(s);
+    var b = $('#soundBtn');
+    if (b) {
+      b.hidden = !allowed;
+      // Solo se redibuja si cambió: reemplazar el ícono a mitad de un toque puede perder el toque.
+      if (b._muted !== muted) {
+        b._muted = muted;
+        b.innerHTML = icon(muted ? 'mute' : 'volume');
+        b.classList.toggle('off', muted);
+        b.setAttribute('aria-label', muted ? 'Activar la música' : 'Silenciar la música');
+        b.setAttribute('aria-pressed', muted ? 'false' : 'true');
+      }
+    }
+    Sound.setEnabled(allowed && !muted);
+    Sound.play(TRACK_FOR[s.phase] || null, cue ? { after: cue } : null);
+  }
+
+  function toggleMute() {
+    muted = !muted;
+    store('aa_mute', muted ? '1' : null);
+    if (st) syncSound(st);
+    toast(muted ? 'Música silenciada en este celular' : 'Música activada');
+  }
+
+  // Sonido corto al ver el resultado: acierto, casi, error o sin respuesta.
+  function resultCue(s) {
+    var mine = null;
+    (s.reveal ? s.reveal.results : []).forEach(function (x) { if (x.id === s.you.id) mine = x; });
+    if (!mine) return null;
+    if (!mine.text) return 'none';
+    return mine.accuracy >= 1 ? 'correct' : mine.accuracy > 0 ? 'partial' : 'wrong';
+  }
+
+  function soundBtn() {
+    return '<button class="icon-btn sound" id="soundBtn" hidden></button>';
   }
 
   // La imagen de la pista (fotos y logos). Los logos pixelados se aclaran por etapas: se precarga
@@ -221,6 +282,8 @@
     else buildFinal(s);
     var lb = $('#leaveBtn');
     if (lb) lb.onclick = leave;
+    var sb = $('#soundBtn');
+    if (sb) sb.onclick = toggleMute;
   }
 
   function update(s) {
@@ -246,14 +309,14 @@
   }
 
   function plainBar(title) {
-    return '<header class="top">' + logoMark() + '<span class="grow title">' + esc(title) + '</span>' +
+    return '<header class="top">' + logoMark() + '<span class="grow title">' + esc(title) + '</span>' + soundBtn() +
       '<button class="pill-btn" id="leaveBtn">Salir</button></header>';
   }
 
   function roundBar(s) {
     var r = s.round;
     return '<header class="top"><span class="pill">' + r.index + ' / ' + r.total + '</span>' +
-      '<span class="grow">' + catIcon(r.catId, r.catIcon) + esc(r.catName) + '</span>' + scorePill(s) + '</header>';
+      '<span class="grow">' + catIcon(r.catId, r.catIcon) + esc(r.catName) + '</span>' + scorePill(s) + soundBtn() + '</header>';
   }
 
   // ---- Unirse (navegador)
@@ -261,6 +324,7 @@
   function renderJoin(msg) {
     screenKey = 'join';
     document.body.classList.remove('final');
+    Sound.setEnabled(false);
     var saved = store('aa_name') || hash.name || '';
     app.innerHTML =
       '<div class="screen center">' +
@@ -295,6 +359,8 @@
         seconds: s.settings.seconds,
         tolerance: s.settings.tolerance,
         hints: s.settings.hints,
+        fifty: !!s.settings.fifty,
+        music: s.settings.music || 'host',
         mode: s.settings.mode || 'write',
         custom: s.settings.custom || ''
       };
@@ -308,6 +374,7 @@
         '<div class="setting" id="tolSetting"><span class="eyebrow">Exigencia con la ortografía</span><div class="seg" id="optTol"></div><p class="muted" id="tolDesc"></p></div>' +
         '<button class="switch-row" id="optHints" style="border:0;background:none;padding:0;font:inherit;text-align:left">' +
         '<span class="txt"><b id="hintsLabel"></b><span class="muted" id="hintsDesc"></span></span><span class="switch" id="hintsSwitch"></span></button>' +
+        '<div class="setting"><span class="eyebrow">Música de fondo</span><div class="seg" id="optMusic"></div><p class="muted" id="musicDesc"></p></div>' +
         '</section>' +
         '<details class="card dashed" id="customBox"><summary>' + icon('pencil') + 'Tu propia categoría</summary>' +
         '<p class="muted" style="margin:0">Una pregunta por línea: <b>pista = respuesta / otra forma de escribirla</b></p>' +
@@ -349,9 +416,10 @@
 
     segGroup('#optMode', MODES.map(function (m) { return m.v; }), function (v) { return icon(modeOf(v).icon, 's') + esc(modeOf(v).name); }, 'mode');
     segGroup('#optTol', TOLERANCE.map(function (t) { return t.v; }), function (v) { return esc(TOLERANCE[v].name); }, 'tolerance');
+    segGroup('#optMusic', ['off', 'host', 'all'], function (v) { return esc(MUSIC[v].name); }, 'music');
     stepper('#stRounds', ROUNDS, 'rounds', 'preguntas');
     stepper('#stSeconds', SECONDS, 'seconds', 'segundos');
-    $('#optHints').onclick = function () { cfg.hints = !cfg.hints; paintSettings(); sendSettings(); };
+    $('#optHints').onclick = function () { var k = helpKey(); cfg[k] = !cfg[k]; paintSettings(); sendSettings(); };
 
     var ta = $('#custom');
     ta.value = cfg.custom;
@@ -414,7 +482,7 @@
     document.querySelectorAll('#cats .cat').forEach(function (b) {
       b.classList.toggle('on', cfg.categories.indexOf(b.getAttribute('data-id')) >= 0);
     });
-    ['#optMode', '#optTol'].forEach(function (sel) {
+    ['#optMode', '#optTol', '#optMusic'].forEach(function (sel) {
       var el = $(sel);
       if (!el) return;
       el.querySelectorAll('button').forEach(function (b) {
@@ -433,10 +501,14 @@
     $('#modeDesc').textContent = modeOf(cfg.mode).desc;
     $('#tolDesc').textContent = TOLERANCE[cfg.tolerance].desc;
     $('#tolSetting').hidden = choice; // con opciones no hay ortografía que calificar
-    $('#hintsLabel').textContent = choice ? 'Ayuda 50/50 a mitad de tiempo' : 'Pista a mitad de tiempo';
-    $('#hintsDesc').textContent = choice ? 'Quita dos opciones incorrectas.' : 'Muestra la primera letra y cuántas letras tiene.';
-    $('#hintsSwitch').classList.toggle('on', !!cfg.hints);
-    $('#optHints').setAttribute('aria-pressed', cfg.hints ? 'true' : 'false');
+    // En modo opciones el interruptor es la ayuda 50/50 (apagada salvo que la actives);
+    // en modo escribir es la pista de letras.
+    var help = !!cfg[helpKey()];
+    $('#hintsLabel').textContent = choice ? 'Ayuda 50/50' : 'Pista a mitad de tiempo';
+    $('#hintsDesc').textContent = choice ? 'A mitad de tiempo quita dos opciones incorrectas.' : 'Muestra la primera letra y cuántas letras tiene.';
+    $('#hintsSwitch').classList.toggle('on', help);
+    $('#optHints').setAttribute('aria-pressed', help ? 'true' : 'false');
+    $('#musicDesc').textContent = MUSIC[cfg.music].desc;
     var n = cfg.categories.length;
     $('#catTitle').textContent = 'Categorías · ' + n;
     var totalCats = document.querySelectorAll('#cats .cat').length;
@@ -444,6 +516,8 @@
     $('#startSub').textContent = modeOf(cfg.mode).name + ' · ' + cfg.rounds + ' preguntas · ' + cfg.seconds + ' s · ' +
       plural(n, 'categoría', 'categorías');
   }
+
+  function helpKey() { return cfg.mode === 'choice' ? 'fifty' : 'hints'; }
 
   function sendSettings() {
     clearTimeout(settingsTimer);
@@ -492,8 +566,9 @@
         }).join('') : '<span class="muted">Sin categorías aún</span>') + '</div>' +
         '<p class="muted" style="margin:0">Modo <b>' + esc(modeOf(s.settings.mode).name) + '</b> · ' + s.settings.rounds + ' preguntas · ' +
         s.settings.seconds + ' s cada una' +
-        (choice ? (s.settings.hints ? ' · con ayuda 50/50' : '')
-          : ' · ortografía ' + TOLERANCE[s.settings.tolerance].name.toLowerCase() + (s.settings.hints ? ' · con pistas' : '')) + '</p>';
+        (choice ? (s.settings.fifty ? ' · con ayuda 50/50' : '')
+          : ' · ortografía ' + TOLERANCE[s.settings.tolerance].name.toLowerCase() + (s.settings.hints ? ' · con pistas' : '')) +
+        (s.settings.music === 'all' ? ' · con música' : '') + '</p>';
     }
   }
 
@@ -537,7 +612,7 @@
         if (!text) { input.classList.add('shake'); setTimeout(function () { input.classList.remove('shake'); }, 400); return; }
         form.querySelector('button').disabled = true;
         api('answer', { text: text }).then(function (res) {
-          if (res.error) { toast(res.error); form.querySelector('button').disabled = false; }
+          if (res.error) { toast(res.error); form.querySelector('button').disabled = false; } else Sound.sfx('sent');
           poll();
         }).catch(function () { form.querySelector('button').disabled = false; toast('No se pudo enviar, intenta otra vez'); });
       };
@@ -550,7 +625,7 @@
         opts.classList.add('busy');
         b.classList.add('picked');
         api('answer', { choice: +b.getAttribute('data-i') }).then(function (res) {
-          if (res.error) { toast(res.error); opts.classList.remove('busy'); b.classList.remove('picked'); }
+          if (res.error) { toast(res.error); opts.classList.remove('busy'); b.classList.remove('picked'); } else Sound.sfx('sent');
           poll();
         }).catch(function () { opts.classList.remove('busy'); b.classList.remove('picked'); toast('No se pudo enviar, intenta otra vez'); });
       };
@@ -594,7 +669,13 @@
     var rem = Math.max(0, deadline - Date.now());
     bar.style.width = (100 * rem / st.round.durationMs) + '%';
     timer.classList.toggle('low', rem < 5000);
-    if (rem > 0) { num.textContent = Math.ceil(rem / 1000); return; }
+    if (rem > 0) {
+      var sec = Math.ceil(rem / 1000);
+      num.textContent = sec;
+      var tk = st.round.index + ':' + sec;
+      if (sec <= 5 && tk !== lastTick) { lastTick = tk; Sound.tick(sec); }
+      return;
+    }
     num.innerHTML = icon('clock');
     var form = $('#ansForm');
     if (form && !form.classList.contains('closed')) {
@@ -703,7 +784,7 @@
   function buildFinal(s) {
     lastRanks = {};
     var html = '<div class="screen">' +
-      '<header class="top"><span class="grow title">Fin del juego</span><button class="pill-btn" id="leaveBtn">Salir</button></header>' +
+      '<header class="top"><span class="grow title">Fin del juego</span>' + soundBtn() + '<button class="pill-btn" id="leaveBtn">Salir</button></header>' +
       '<div class="final-head"><svg class="pop-in" width="64" height="64" viewBox="0 0 24 24" fill="#FFC233" stroke="#1A1433" stroke-width="1.4" stroke-linejoin="round" aria-hidden="true">' +
       '<path d="M7 4h10v5a5 5 0 0 1-10 0z"/><path d="M7 6H4a3 3 0 0 0 3 4" fill="none"/><path d="M17 6h3a3 3 0 0 1-3 4" fill="none"/><path d="M10 14h4v3h-4z"/><path d="M8 20h8v-3H8z"/></svg>' +
       '<h1 id="winner"></h1><p id="winnerSub"></p></div>' +

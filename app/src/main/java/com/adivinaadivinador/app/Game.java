@@ -33,6 +33,11 @@ public final class Game {
     public static final String MODE_WRITE = "write";
     public static final String MODE_CHOICE = "choice";
 
+    /** Dónde suena la música: en ningún celular, solo en el del anfitrión o en todos. */
+    public static final String MUSIC_OFF = "off";
+    public static final String MUSIC_HOST = "host";
+    public static final String MUSIC_ALL = "all";
+
     enum Phase { LOBBY, QUESTION, REVEAL, FINAL }
 
     static final class Item {
@@ -134,7 +139,9 @@ public final class Game {
     private int rounds = 10;
     private int seconds = 25;
     private int tolerance = Matcher.NORMAL;
-    private boolean hints = true;
+    private boolean hints = true;   // pista de letras (modo escribir)
+    private boolean fifty = false;  // ayuda 50/50 (modo opciones): apagada salvo que el anfitrión la active
+    private String music = MUSIC_HOST;
     private String mode = MODE_WRITE;
     private String customText = "";
     private Category custom = new Category("custom", "Personalizada", "✍️", "Pistas del anfitrión", "text");
@@ -242,6 +249,11 @@ public final class Game {
         if (s.has("seconds")) seconds = clamp(s.getInt("seconds"), 5, 120);
         if (s.has("tolerance")) tolerance = clamp(s.getInt("tolerance"), Matcher.STRICT, Matcher.GENEROUS);
         if (s.has("hints")) hints = s.getBoolean("hints");
+        if (s.has("fifty")) fifty = s.getBoolean("fifty");
+        if (s.has("music")) {
+            String m = s.getString("music");
+            music = MUSIC_OFF.equals(m) || MUSIC_ALL.equals(m) ? m : MUSIC_HOST;
+        }
         if (s.has("mode")) mode = MODE_CHOICE.equals(s.getString("mode")) ? MODE_CHOICE : MODE_WRITE;
         if (s.has("custom")) {
             customText = s.getString("custom");
@@ -404,7 +416,8 @@ public final class Game {
             }
         }
         if (phase == Phase.QUESTION) {
-            if (hints && !hintShown && now >= qHintAt) {
+            boolean help = questions.get(qIndex).options != null ? fifty : hints;
+            if (help && !hintShown && now >= qHintAt) {
                 hintShown = true;
                 version++;
             }
@@ -452,7 +465,8 @@ public final class Game {
         for (String id : selected) sel.put(id);
         JSONObject settings = new JSONObject()
                 .put("categories", sel).put("rounds", rounds).put("seconds", seconds)
-                .put("tolerance", tolerance).put("hints", hints).put("mode", mode)
+                .put("tolerance", tolerance).put("hints", hints).put("fifty", fifty)
+                .put("music", music).put("mode", mode)
                 .put("customCount", custom.items.size());
         if (me.host) settings.put("custom", customText);
         o.put("settings", settings);

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -54,6 +55,8 @@ public class MainActivity extends Activity {
         if (Build.VERSION.SDK_INT >= 26) ui |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
         getWindow().getDecorView().setSystemUiVisibility(ui);
         prefs = getSharedPreferences("adivina", MODE_PRIVATE);
+        // Los botones de volumen controlan la música del juego aunque en ese momento no suene nada.
+        setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         web = new WebView(this);
         web.setBackgroundColor(BG);
@@ -103,6 +106,19 @@ public class MainActivity extends Activity {
         if (url != null && url.startsWith("http")) confirmLeave();
         else if (url != null && url.contains("creditos.html") && web.canGoBack()) web.goBack();
         else super.onBackPressed();
+    }
+
+    // Al salir de la app (o apagar la pantalla) la página queda oculta y la música se pausa sola.
+    @Override
+    protected void onPause() {
+        web.onPause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        web.onResume();
     }
 
     @Override

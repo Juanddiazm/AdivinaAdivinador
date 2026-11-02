@@ -20,8 +20,8 @@ Solo el anfitrión necesita la app. Los demás pueden instalarla también o simp
 
 | | Modo | Cómo se responde | Ayuda a mitad de tiempo |
 |---|---|---|---|
-| ✍️ | **Escribir** | Cada uno escribe la respuesta; con errores de ortografía gana una parte | Primera letra y cuántas letras tiene |
-| 🔘 | **Opciones** | Se toca una de 4 opciones (la buena y 3 de la misma categoría) | 50/50: quita dos opciones malas |
+| ✍️ | **Escribir** | Cada uno escribe la respuesta; con errores de ortografía gana una parte | Primera letra y cuántas letras tiene (encendida por defecto) |
+| 🔘 | **Opciones** | Se toca una de 4 opciones (la buena y 3 de la misma categoría) | 50/50: quita dos opciones malas (**apagada por defecto**; el anfitrión la activa al configurar la partida) |
 
 En modo opciones solo la respuesta correcta suma, con el mismo bono por rapidez y por ser el primero; al revelar se ve cuántos eligieron cada opción.
 
@@ -75,6 +75,17 @@ Las preguntas están en [`app/src/main/assets/data/categorias.json`](app/src/mai
 - **Matemáticas rápidas** o **traducciones** (palabra en inglés → español) para jugar en clase.
 - **Equipos**: jugar por parejas o equipos y sumar puntos en grupo.
 - **Modo dibujo**: uno dibuja en su pantalla y los demás adivinan (tipo Pictionary).
+
+## 🎵 Música
+
+La música y los sonidos se generan en el celular con Web Audio (no hay archivos de audio, no hay derechos de autor de por medio y funciona sin internet), en `app/src/main/assets/web/music.js`:
+
+- **Sala**: pop alegre mientras se une la gente.
+- **Pregunta**: pulso de «pensando», con un «tic» en los últimos 5 segundos.
+- **Resultado**: groove tranquilo, después de un sonido de acierto, «casi», error o sin respuesta.
+- **Podio**: fanfarria y música de celebración.
+
+El anfitrión elige dónde suena en **Música de fondo**: *No*, *Mi celular* (por defecto, para que no se oigan varias canciones a destiempo) o *Todos*. Cada quien puede silenciarla en su celular con el botón del parlante, y se pausa sola al salir de la app.
 
 ## 🎨 Diseño
 

@@ -165,6 +165,8 @@ a { color: var(--violet); font-weight: 700; }
 .top .title { font-family: var(--display); font-size: 19px; }
 .top .mark { width: 34px; height: 34px; }
 .pill { padding: 7px 12px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 800; font-size: 14px; white-space: nowrap; }
+.top .icon-btn { background: var(--surface); border-color: var(--ink); }
+.icon-btn.sound.off { color: var(--faint); border-style: dashed; }
 .pill.score { display: flex; align-items: center; gap: 6px; background: var(--sun); color: var(--ink); border: 2px solid var(--ink); padding: 5px 12px; }
 body.final .top .title { color: #fff; }
 
